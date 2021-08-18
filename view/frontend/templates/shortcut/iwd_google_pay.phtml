@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @var IWD\CheckoutConnector\Block\Shortcut\GooglePayButton $block
+ */
+
+$configData = $block->getConfigData();
+
+$config = ['IWD_CheckoutConnector/js/view/payment/cart/iwd_google_pay' => $configData];
+
+?>
+
+<div  data-mage-init='<?= json_encode($config) ?>' class="google-pay-cart" id="iwd-google-pay-cart"></div>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../../../vendor/magento/magento2-functional-testing-framework/src/Magento/FunctionalTestingFramework/Page/etc/SectionObject.xsd">
+    <section name="StorefrontCheckoutAddressSection">
+        <element name="shippingFirstName" type="input" selector="#shipping_first_name"/>
+        <element name="shippingLastName" type="input" selector="#shipping_last_name"/>
+        <element name="shippingAddress1" type="input" selector="#shipping_address_1"/>
+		<element name="shippingAddress2" type="input" selector="#shipping_address_2"/>
+		<element name="shippingCountry" type="select" selector="#shipping_country"/>
+		<element name="shippingState" type="select" selector="#shipping_state"/>
+        <element name="stateInput" type="input" selector="#state_input"/>
+        <element name="shippingCity" type="input" selector="#shipping_city"/>
+        <element name="shippingPostcode" type="input" selector="#shipping_postcode"/>
+        <element name="shippingPhone" type="input" selector="#shipping_phone"/>
+        <element name="shipBillToDifferentAddressCheckbox" type="checkbox" selector="#ship-bill-to-different-address-checkbox"/>
+        <element name="shippingFirstName" type="input" selector="#billing_first_name"/>
+        <element name="shipping_last_name" type="input" selector="#billing_last_name"/>
+        <element name="shipping_address_1" type="input" selector="#billing_address_1"/>
+        <element name="shipping_address_2" type="input" selector="#billing_address_2"/>
+        <element name="shipping_country" type="select" selector="#billing_country"/>
+        <element name="shipping_state" type="select" selector="#billing_state"/>
+        <element name="state_input" type="input" selector="#billing_input"/>
+        <element name="shipping_city" type="input" selector="#billing_city"/>
+        <element name="shipping_postcode" type="input" selector="#billing_postcode"/>
+        <element name="shipping_phone" type="input" selector="#billing_phone"/>
+    </section>
+</sections>

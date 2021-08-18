@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../../../vendor/magento/magento2-functional-testing-framework/src/Magento/FunctionalTestingFramework/Page/etc/SectionObject.xsd">
+    <section name="StorefrontMinicartSection">
+        <element name="minicartContent" type="block" selector="#minicart-content-wrapper"/>
+        <element name="minicartClose" type="button" selector="#btn-minicart-close"/>
+        <element name="topCartCheckoutButton" type="button" selector="#top-cart-btn-checkout"/>
+    		<element name="topPaypalWrapper" type="block" selector="#iwd-paypal-wrapper"/>
+    		<element name="topPaypalCreditMsg" type="block" selector="#iwd-paypal-credit-msg"/>
+    		<element name="topPaypalCreditMsgIframe" type="iframe" selector="iframe[title=PayPal Message 1]"/>
+    </section>
+</sections>

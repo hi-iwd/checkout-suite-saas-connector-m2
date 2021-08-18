@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../../../vendor/magento/magento2-functional-testing-framework/src/Magento/FunctionalTestingFramework/Page/etc/SectionObject.xsd">
+    <section name="StorefrontCheckoutPageIframeSection">
+    		<element name="iwdCheckoutIframe" type="iframe" selector="#iwd_checkout_iframe"/>
+  			<element name="securedCheckoutLabel" type="text" selector=".secured-checkout"/>
+  			<element name="checkoutPaypalButton" type="block" selector=".paypal-button .paypal-button-number-0"/>
+  			<element name="loginEmail" type="input" selector="#email"/>
+  			<element name="loginPassword" type="input" selector="#password"/>
+  			<element name="checkoutLoginButton" type="button" selector="#iwd_login_submit"/>
+  			<element name="checkoutResetButton" type="block" selector="#iwd_reset_password"/>
+    </section>
+</sections>

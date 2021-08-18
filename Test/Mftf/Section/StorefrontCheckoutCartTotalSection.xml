@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../../../vendor/magento/magento2-functional-testing-framework/src/Magento/FunctionalTestingFramework/Page/etc/SectionObject.xsd">
+    <section name="StorefrontCheckoutCartTotalSection">
+    		<element name="cartPaypalCreditMsgIframe" type="iframe" selector="//iframe[@title='PayPal Message 2']"/>
+        <element name="cartPaypalWrapperIframe" type="iframe" selector="//iframe[@class='component-frame']"/>
+        <element name="cartPaypalButton" type="block" selector="//div[@class='paypal-button-label-container']"/>
+        <element name="cartCheckoutButton" type="button" selector="//button[@data-role='proceed-to-checkout']"/>
+    </section>
+</sections>

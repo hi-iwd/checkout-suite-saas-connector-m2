@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <columns name="sales_order_creditmemo_columns">
+        <column name="iwd_checkout_pay" class="IWD\CheckoutConnector\Ui\Component\Listing\Column\PaymentMethod">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">IWD Payment Title</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+    </columns>
+</listing>
