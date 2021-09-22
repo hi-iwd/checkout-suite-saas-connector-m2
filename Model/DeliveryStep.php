@@ -74,7 +74,7 @@ class DeliveryStep implements DeliveryStepInterface
      *
      * @param CartItems $cartItems
      * @param CartTotals $cartTotals
-     * @param ShippingMethods $shippingMethods
+     * @param OfflinePaymentMethod $shippingMethods
      * @param Addresses $address
      * @param FormatData $formatData
      * @param AccessValidator $accessValidator

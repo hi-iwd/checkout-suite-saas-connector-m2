@@ -78,4 +78,12 @@
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+
+    <type name="Magento\Customer\CustomerData\SectionPoolInterface">
+        <arguments>
+            <argument name="sectionSourceMap" xsi:type="array">
+                <item name="subscription" xsi:type="string">IWD\CheckoutConnector\CustomerData\Subscription</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

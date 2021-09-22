@@ -1,0 +1,13 @@
+<div id="subscription-paypal" class="action tocart btn-subscribe" data-bind="scope:'subscription'">
+    <div id="paypal-subscription-button" data-plan-id=""></div>
+    <!-- ko template: getTemplate() --><!-- /ko -->
+</div>
+<script type="text/x-magento-init">
+    {
+        "#subscription-paypal": {
+            "Magento_Ui/js/core/app": <?= /* @noEscape */
+    $block->getJsLayout(); ?>
+        }
+    }
+
+</script>

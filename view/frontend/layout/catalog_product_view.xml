@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="product.info.addtocart">
+            <block name="product.info.addtocart.instantPurchase"
+                   template="IWD_CheckoutConnector::paypal/product_page.phtml" before="-">
+                <arguments>
+                    <argument name="jsLayout" xsi:type="array">
+                        <item name="components" xsi:type="array">
+                            <item name="subscription" xsi:type="array">
+                                <item name="component" xsi:type="string">IWD_CheckoutConnector/js/view/subscription</item>
+                                <item name="config" xsi:type="array">
+                                    <item name="template" xsi:type="string">IWD_CheckoutConnector/payment/subscription/subscription</item>
+                                </item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceBlock name="product.info.addtocart.additional">
+            <block name="product.info.addtocart.instantPurchase.additional"
+                   template="IWD_CheckoutConnector::paypal/product_page.phtml" before="-">
+                <arguments>
+                    <argument name="jsLayout" xsi:type="array">
+                        <item name="components" xsi:type="array">
+                            <item name="subscription" xsi:type="array">
+                                <item name="component" xsi:type="string">IWD_CheckoutConnector/js/view/subscription</item>
+                                <item name="config" xsi:type="array">
+                                    <item name="template" xsi:type="string">IWD_CheckoutConnector/payment/subscription/subscription</item>
+                                </item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceContainer name="before.body.end">
+            <block name="product.sku.js" template="IWD_CheckoutConnector::product/view/product_sku.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">IWD\CheckoutConnector\ViewModel\ProductSku</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

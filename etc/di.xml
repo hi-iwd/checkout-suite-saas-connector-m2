@@ -35,6 +35,7 @@
     <preference for="IWD\CheckoutConnector\Api\OrderInterface" type="IWD\CheckoutConnector\Model\Order" />
     <preference for="IWD\CheckoutConnector\Api\UpdateConfigInterface" type="IWD\CheckoutConnector\Model\UpdateConfig" />
     <preference for="IWD\CheckoutConnector\Api\TransactionInformationInterface" type="IWD\CheckoutConnector\Model\GooglePay\TransactionInformation" />
+    <preference for="IWD\CheckoutConnector\Api\OfflinePaymentMethodInterface" type="IWD\CheckoutConnector\Model\OfflinePaymentMethod" />
 
 
 
@@ -160,4 +161,10 @@
 
     <!-- Change Payment Method Title For Customer Account -->
     <preference for="Magento\Sales\Block\Order\Info" type="IWD\CheckoutConnector\Block\Order\Info" />
+
+    <preference for="IWD\CheckoutConnector\Api\ProductRepositoryInterface" type="IWD\CheckoutConnector\Model\ProductRepository" />
+    <preference for="IWD\CheckoutConnector\Api\SubscriptionRepositoryInterface" type="IWD\CheckoutConnector\Model\SubscriptionRepository"/>
+    <preference for="IWD\CheckoutConnector\Api\Data\SubscriptionInterface" type="IWD\CheckoutConnector\Model\Data\Subscription"/>
+    <preference for="IWD\CheckoutConnector\Api\Data\SubscriptionSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="IWD\CheckoutConnector\Api\OrderManagementInterface" type="IWD\CheckoutConnector\Model\OrderManagement"/>
 </config>

@@ -5,6 +5,9 @@ namespace IWD\CheckoutConnector\Model\Cart;
 use Magento\Catalog\Api\ProductRepositoryInterfaceFactory;
 use Magento\Catalog\Helper\ImageFactory;
 use Magento\Directory\Model\Currency;
+use Magento\Framework\View\Element\BlockFactory;
+use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class CartItems
@@ -27,7 +30,9 @@ class CartItems
      * @var Currency
      */
     private $currency;
-
+    protected $_storeManager;
+    protected $_appEmulation;
+    protected $_blockFactory;
     /**
      * CartItems constructor.
      *
@@ -38,11 +43,18 @@ class CartItems
     public function __construct(
         ProductRepositoryInterfaceFactory $productRepository,
         ImageFactory $productImageHelper,
-        Currency $currency
+        Currency $currency,
+        StoreManagerInterface $storeManager,
+        BlockFactory $blockFactory,
+        Emulation $appEmulation
+
     ) {
         $this->productRepository = $productRepository;
         $this->productImageHelper = $productImageHelper;
         $this->currency = $currency;
+        $this->_storeManager = $storeManager;
+        $this->_blockFactory = $blockFactory;
+        $this->_appEmulation = $appEmulation;
     }
 
     /**
@@ -55,7 +67,7 @@ class CartItems
 
         foreach ($quote->getAllVisibleItems() as $index => $item) {
             $productData = $this->productRepository->create()->getById($item->getProductId());
-            $imageUrl = $this->productImageHelper->create()->init($productData, 'product_thumbnail_image')->setImageFile($productData->getThumbnail())->getUrl();
+            $imageUrl = $this->getImageUrl($productData, 'product_page_image_medium');
             $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
 
             $data[] = [
@@ -71,6 +83,24 @@ class CartItems
         }
 
         return $data;
+    }
+
+    /**
+     * @param $product
+     * @param string $imageType
+     * @return mixed
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    protected function getImageUrl($product, string $imageType = '')
+    {
+        $storeId = $this->_storeManager->getStore()->getId();
+        $this->_appEmulation->startEnvironmentEmulation($storeId, \Magento\Framework\App\Area::AREA_FRONTEND, true);
+        $imageBlock = $this->_blockFactory->createBlock('Magento\Catalog\Block\Product\ListProduct');
+        $productImage = $imageBlock->getImage($product, $imageType);
+        $imageUrl = $productImage->getImageUrl();
+        $this->_appEmulation->stopEnvironmentEmulation();
+
+        return $imageUrl;
     }
 
     /**

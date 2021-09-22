@@ -5,6 +5,9 @@
     <update handle="checkout_index_index"/>
     <body>
         <referenceBlock name="page.main.title" remove="true"/>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template" name="checkout.top.link" template="IWD_CheckoutConnector::link.phtml" after="-"/>
+        </referenceContainer>
         <referenceBlock name="checkout.root">
             <action method="setTemplate">
                 <argument name="template" xsi:type="string">IWD_CheckoutConnector::frame.phtml</argument>

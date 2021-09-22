@@ -36,6 +36,12 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
+    <route url="/V1/iwd-checkout/offline-order-create" method="POST">
+        <service class="IWD\CheckoutConnector\Api\OrderInterface" method="offlineOrderCreate"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
     <route url="/V1/iwd-checkout/order-update" method="POST">
         <service class="IWD\CheckoutConnector\Api\OrderInterface" method="update"/>
         <resources>
@@ -54,12 +60,40 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
-
     <route url="/V1/googlepay/guest/:cartId/transaction-information" method="POST">
         <service class="IWD\CheckoutConnector\Api\TransactionInformationInterface" method="calculate"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
     </route>
-
+    <route url="/V1/product" method="GET">
+        <service class="IWD\CheckoutConnector\Api\ProductRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/notify" method="POST">
+        <service class="\IWD\CheckoutConnector\Api\SubscriptionRepositoryInterface" method="checkAndSave"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/order/notify" method="PUT">
+        <service class="IWD\CheckoutConnector\Api\OrderManagementInterface" method="place"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/iwd-checkout/shipping-methods-step" method="POST">
+        <service class="IWD\CheckoutConnector\Api\OfflinePaymentMethodInterface" method="getShippingMethods"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/iwd-checkout/order-status-step" method="POST">
+        <service class="IWD\CheckoutConnector\Api\OfflinePaymentMethodInterface" method="getOrderStatus"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
 </routes>

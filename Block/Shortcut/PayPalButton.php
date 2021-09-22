@@ -89,6 +89,14 @@ class PayPalButton extends Template implements ShortcutInterface
     /**
      * @return string
      */
+    public function getMerchantId()
+    {
+        return $this->configProvider->getConfigData('merchant_id');
+    }
+
+    /**
+     * @return string
+     */
     public function getPayPalBnCode() {
         return $this->configProvider->getConfigData('bn_code');
     }

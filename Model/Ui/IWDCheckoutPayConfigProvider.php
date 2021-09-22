@@ -114,7 +114,8 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
             'checkoutPageUrl' => $this->helper->getCheckoutPageUrl(),
             'grandTotalAmount' => $this->getGrandTotalAmount(),
             'btnShape' => $this->getConfigData('btn_shape'),
-            'btnColor' => $this->getConfigData('btn_color')
+            'btnColor' => $this->getConfigData('btn_color'),
+            'creditStatus' => $this->getConfigData('paypal_credit_status')
         ];
     }
 

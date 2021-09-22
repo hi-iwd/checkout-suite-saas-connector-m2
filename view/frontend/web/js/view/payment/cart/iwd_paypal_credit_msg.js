@@ -46,7 +46,7 @@ define(
                         amount = creditMsgConfig.grand_total_amount;
                     }
 
-                    if(amount > 0) {
+                    if(amount > 0 && creditMsgConfig.status == 1) {
                         paypal.Messages({
                             amount: amount,
                             pageType: 'cart',

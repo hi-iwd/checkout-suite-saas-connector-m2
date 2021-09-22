@@ -9,4 +9,24 @@
             <column name="entity_id"/>
         </constraint>
     </table>
+
+    <table name="iwd_subscription">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="false" nullable="false" identity="true" comment="ID"/>
+        <column xsi:type="varchar" name="plan_id" nullable="false" length="255" comment="plan id"/>
+        <column xsi:type="varchar" name="product_id" nullable="false" length="255" comment="product id"/>
+        <column xsi:type="varchar" name="sku" nullable="false" length="255" comment="sku"/>
+        <column xsi:type="varchar" name="merchant_id" nullable="false" length="255" comment="merchant id"/>
+        <column xsi:type="varchar" name="checkout_instance_id" nullable="false" length="255" comment="checkout instance id"/>
+        <column xsi:type="varchar" name="environment_id" nullable="false" length="255" comment="environment id"/>
+        <column xsi:type="varchar" name="env" nullable="false" length="255" comment="env"/>
+        <column xsi:type="varchar" name="client_id" nullable="false" length="255" comment="client id"/>
+        <column xsi:type="boolean" name="quantity_supported" nullable="true" comment="quantity_supported"/>
+        <column xsi:type="boolean" name="active" nullable="false" comment="active"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="IWD_SUBSCRIPTION_SKU" indexType="btree">
+            <column name="sku"/>
+        </index>
+    </table>
 </schema>

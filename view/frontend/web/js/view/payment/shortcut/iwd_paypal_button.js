@@ -15,6 +15,7 @@ define(
                 containerId: null,
                 checkoutPageUrl: null,
                 grandTotalAmount: 0,
+                creditStatus: 1,
                 btnShape: 'rect',
                 btnColor: 'gold'
             },
@@ -31,6 +32,7 @@ define(
                     let paypal = window.paypal;
 
                     paypal.Buttons({
+                        fundingSource: self.creditStatus == 1 ? '' : 'paypal',
                         style: {
                             layout: 'horizontal',
                             size: 'responsive',

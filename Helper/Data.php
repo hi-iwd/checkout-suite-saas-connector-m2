@@ -24,6 +24,7 @@ class Data extends AbstractHelper
     const XML_PATH_INTEGRATION_API_KEY = 'iwd_checkout_connector/general/integration_api_key';
     const XML_PATH_INTEGRATION_API_SECRET = 'iwd_checkout_connector/general/integration_api_secret';
     const COUNTRY_CODE = 'general/country/default';
+    const XML_PATH_SUBSCRIPTION_ENABLE = 'iwd_checkout_connector/general/enable_subscription';
 
     /**
      * @var Config
@@ -187,6 +188,19 @@ class Data extends AbstractHelper
     public function getDefaultCountryCode($storeId = null){
         return $this->scopeConfig->getValue(
             self::COUNTRY_CODE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * @param null $storeId
+     * @return bool
+     */
+    public function isSubscription($storeId = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SUBSCRIPTION_ENABLE,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );

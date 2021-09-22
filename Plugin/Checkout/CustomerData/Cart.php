@@ -72,6 +72,7 @@ class Cart
         $config = $this->configProvider;
 
         $result['paypal_credit_msg_config'] = [
+            'status'             => $config->getConfigData('paypal_credit_status'),
             'container_id'       => $config->getGeneratedContainerId(),
             'grand_total_amount' => $config->getGrandTotalAmount(),
             'logo_type'          => $config->getConfigData('credit_msg_logo_type'),

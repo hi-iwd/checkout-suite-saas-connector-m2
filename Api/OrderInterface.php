@@ -20,6 +20,15 @@ interface OrderInterface
 
     /**
      * @api
+     * @param string $quote_id
+     * @param mixed $access_tokens
+     * @param mixed $data
+     * @return array_iwd
+     */
+    public function offlineOrderCreate($quote_id, $access_tokens, $data);
+
+    /**
+     * @api
      * @param mixed $access_tokens
      * @param mixed $data
      * @return array_iwd

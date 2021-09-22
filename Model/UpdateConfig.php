@@ -4,6 +4,7 @@ namespace IWD\CheckoutConnector\Model;
 use IWD\CheckoutConnector\Api\array_iwd;
 use IWD\CheckoutConnector\Api\UpdateConfigInterface;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
 
 /**
  * Class UpdateConfig
@@ -22,6 +23,11 @@ class UpdateConfig implements UpdateConfigInterface
     private $IWDCheckoutPayConfigProvider;
 
     /**
+     * @var IWDCheckoutOfflinePayCheckmoConfigProvider
+     */
+    private $IWDCheckoutOfflinePayCheckmoConfigProvider;
+
+    /**
      * UpdateConfig constructor.
      *
      * @param AccessValidator $accessValidator
@@ -29,10 +35,12 @@ class UpdateConfig implements UpdateConfigInterface
      */
     public function __construct(
         AccessValidator $accessValidator,
-        IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider
+        IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
+        IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider
     ) {
         $this->accessValidator = $accessValidator;
         $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
+        $this->IWDCheckoutOfflinePayCheckmoConfigProvider = $IWDCheckoutOfflinePayCheckmoConfigProvider;
     }
 
     /**
@@ -60,6 +68,20 @@ class UpdateConfig implements UpdateConfigInterface
 
         if(isset($data['google_pay_info']) && $data['google_pay_info']) {
             $this->IWDCheckoutPayConfigProvider->updateConfig(array('google_pay_info' => $data['google_pay_info']));
+        }
+
+        if(isset($data['offline_payments']) && $data['offline_payments']) {
+            foreach ($data['offline_payments'] as $gateway_type => $gateway_settings){
+                switch ($gateway_type){
+                    case 'check_or_money_order':
+                        foreach ($gateway_settings as $k => $v){
+                            if(!empty($v)){
+                                $this->IWDCheckoutOfflinePayCheckmoConfigProvider->updateConfig(array($k => $v));
+                            }
+                        }
+                        break;
+                }
+            }
         }
 
         return $this->IWDCheckoutPayConfigProvider->getConfigData('google_pay_info');

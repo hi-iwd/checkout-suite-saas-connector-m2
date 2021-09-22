@@ -44,8 +44,11 @@ class ChangeOrderStatus implements ObserverInterface
     {
         $order = $observer->getEvent()->getOrder();
         $payment_method_code = $order->getPayment()->getMethodInstance()->getCode();
-
-        if ($payment_method_code == $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode()) {
+        $shipping_method_code = $order->getShippingMethod();
+        if (
+            $payment_method_code == $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode()
+            && $shipping_method_code != \IWD\CheckoutConnector\Model\Carrier\Subscription::CODE
+        ) {
             $this->orderStatus->changeStatus($order);
         }
     }

@@ -5,6 +5,7 @@
         <iwd_checkout_connector>
             <general>
                 <enable>0</enable>
+                <enable_subscription>0</enable_subscription>
                 <integration_api_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </general>
         </iwd_checkout_connector>
@@ -33,6 +34,38 @@
                 <is_gateway>1</is_gateway>
                 <sort_order>1</sort_order>
             </iwd_checkout_pay>
+            <!-- Offline Payments -->
+            <iwd_checkout_offline_pay_checkmo>
+                <active>1</active>
+                <title>IWD Checkout Offline Check Pay</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWD\CheckoutConnector\Model\OfflinePayment\Checkmo</model>
+                <group>offline</group>
+                <payable_to></payable_to>
+                <mailing_address></mailing_address>
+                <extra_details></extra_details>
+                <instruction></instruction>
+            </iwd_checkout_offline_pay_checkmo>
+            <iwd_checkout_offline_pay_zero>
+                <active>1</active>
+                <title>IWD Checkout Offline Zero Pay</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWD\CheckoutConnector\Model\OfflinePayment\Zero</model>
+                <group>offline</group>
+            </iwd_checkout_offline_pay_zero>
         </payment>
+        <carriers>
+            <subscription>
+                <active>1</active>
+                <title>Only for subscription</title>
+                <name>Subscription</name>
+                <shipping_cost>0</shipping_cost>
+                <sallowspecific>0</sallowspecific>
+                <sort_order>15</sort_order>
+                <model>IWD\CheckoutConnector\Model\Carrier\Subscription</model>
+            </subscription>
+        </carriers>
     </default>
 </config>

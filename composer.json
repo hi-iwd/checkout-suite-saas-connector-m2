@@ -1,18 +1,10 @@
 {
-  "name": "iwd/checkout-suite-saas-connector-m2",
+  "name": "iwd/opc",
   "description": "IWD Checkout Connector",
   "type": "magento2-module",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "license": [
-    "MIT"
-  ],
-  "authors": [
-    {
-      "name": "IWD Agency",
-      "email": "extensions@iwdagency.com",
-      "homepage": "https://iwdagency.com",
-      "role": "Leader"
-    }
+    "proprietary"
   ],
   "autoload": {
     "files": [
@@ -21,5 +13,11 @@
     "psr-4": {
       "IWD\\CheckoutConnector\\": ""
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://repo.magento.com/"
+    }
+  ]
 }

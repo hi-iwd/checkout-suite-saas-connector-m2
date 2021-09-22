@@ -4,18 +4,24 @@
  */
 
 $containerId = $block->getContainerId();
+$merchantId = $block->getMerchantId() ? $block->getMerchantId() : ''
 ?>
 <?php if($block->getPaypalStatus()): ?>
     <script>
-        (function(d, s, id){
-            let js, ref = d.getElementsByTagName(s)[0];
-            if (!d.getElementById(id)){
-                js = d.createElement(s); js.id = id; js.async = true;
-                js.src = "https://www.paypal.com/sdk/js?client-id=<?= $block->getClientId() ?>&currency=<?= $block->getCurrencyCode() ?>&commit=false&intent=authorize&components=buttons,messages";
-                js.setAttribute('data-partner-attribution-id', '<?= $block->getPayPalBnCode() ?>');
-                ref.parentNode.insertBefore(js, ref); }
-        }(document, "script", "paypal-sdk-js"));
+        if (typeof window.paypal === 'undefined') {
+            window.paypalLoadScript(
+                {
+                    "client-id": "<?= $block->getClientId() ?>",
+                    "commit": "false",
+                    "intent": "capture",
+                    "components": "buttons,messages",
+                    "vault": "true",
+                    "merchant-id": "<?=$merchantId?>",
+                    "currency": "<?=$block->getCurrencyCode()?>",
+                    "data-partner-attribution-id": "<?= $block->getPayPalBnCode() ?>"
+                }
+            )
+        }
     </script>
-
     <div id='<?= $containerId ?>' class="iwd-paypal-wrapper" data-mage-init='<?= $block->getJsonConfig($containerId) ?>'></div>
 <?php endif; ?>
