@@ -110,6 +110,20 @@ class PayPalButton extends Template implements ShortcutInterface
 
     /**
      * @return string
+     */
+    public function getPaypalCreditStatus(){
+        return $this->configProvider->getConfigData('paypal_credit_status');
+    }
+
+    /**
+     * @return string
+     */
+    public function getPaypalVenmoStatus(){
+        return $this->configProvider->getConfigData('paypal_venmo_status');
+    }
+
+    /**
+     * @return string
      * @throws LocalizedException
      */
     public function getContainerId()
@@ -131,6 +145,23 @@ class PayPalButton extends Template implements ShortcutInterface
     public function getAlias()
     {
         return $this->getData(self::ALIAS_ELEMENT_INDEX);
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getEnableFundingParam()
+    {
+        $enableFunding = [];
+
+        if($this->getPaypalVenmoStatus() === '1') {
+            $enableFunding[] = 'venmo';
+        }
+        if($this->getPaypalCreditStatus() === '1') {
+            $enableFunding[] = 'paylater';
+        }
+
+        return implode(",", $enableFunding);
     }
 
     /**

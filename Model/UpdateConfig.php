@@ -5,6 +5,9 @@ use IWD\CheckoutConnector\Api\array_iwd;
 use IWD\CheckoutConnector\Api\UpdateConfigInterface;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
 
 /**
  * Class UpdateConfig
@@ -28,6 +31,21 @@ class UpdateConfig implements UpdateConfigInterface
     private $IWDCheckoutOfflinePayCheckmoConfigProvider;
 
     /**
+     * @var IWDCheckoutOfflinePayCashOnDeliveryConfigProvider
+     */
+    private $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+
+    /**
+     * @var IWDCheckoutOfflinePayBankTransferConfigProvider
+     */
+    private $IWDCheckoutOfflinePayBankTransferConfigProvider;
+
+    /**
+     * @var IWDCheckoutOfflinePayPurchaseOrderConfigProvider
+     */
+    private $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+
+    /**
      * UpdateConfig constructor.
      *
      * @param AccessValidator $accessValidator
@@ -36,11 +54,17 @@ class UpdateConfig implements UpdateConfigInterface
     public function __construct(
         AccessValidator $accessValidator,
         IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
-        IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider
+        IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider,
+        IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider,
+        IWDCheckoutOfflinePayBankTransferConfigProvider $IWDCheckoutOfflinePayBankTransferConfigProvider,
+        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider
     ) {
         $this->accessValidator = $accessValidator;
         $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
         $this->IWDCheckoutOfflinePayCheckmoConfigProvider = $IWDCheckoutOfflinePayCheckmoConfigProvider;
+        $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider = $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+        $this->IWDCheckoutOfflinePayBankTransferConfigProvider = $IWDCheckoutOfflinePayBankTransferConfigProvider;
+        $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider = $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
     }
 
     /**
@@ -77,6 +101,27 @@ class UpdateConfig implements UpdateConfigInterface
                         foreach ($gateway_settings as $k => $v){
                             if(!empty($v)){
                                 $this->IWDCheckoutOfflinePayCheckmoConfigProvider->updateConfig(array($k => $v));
+                            }
+                        }
+                        break;
+                    case 'cash_on_delivery':
+                        foreach ($gateway_settings as $k => $v){
+                            if(!empty($v)){
+                                $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->updateConfig(array($k => $v));
+                            }
+                        }
+                        break;
+                    case 'banktransfer':
+                        foreach ($gateway_settings as $k => $v){
+                            if(!empty($v)){
+                                $this->IWDCheckoutOfflinePayBankTransferConfigProvider->updateConfig(array($k => $v));
+                            }
+                        }
+                        break;
+                    case 'purchaseorder':
+                        foreach ($gateway_settings as $k => $v){
+                            if(!empty($v)){
+                                $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->updateConfig(array($k => $v));
                             }
                         }
                         break;

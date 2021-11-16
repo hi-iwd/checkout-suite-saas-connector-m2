@@ -9,18 +9,23 @@ $merchantId = $block->getMerchantId() ? $block->getMerchantId() : ''
 <?php if($block->getPaypalStatus()): ?>
     <script>
         if (typeof window.paypal === 'undefined') {
-            window.paypalLoadScript(
-                {
-                    "client-id": "<?= $block->getClientId() ?>",
-                    "commit": "false",
-                    "intent": "capture",
-                    "components": "buttons,messages",
-                    "vault": "true",
-                    "merchant-id": "<?=$merchantId?>",
-                    "currency": "<?=$block->getCurrencyCode()?>",
-                    "data-partner-attribution-id": "<?= $block->getPayPalBnCode() ?>"
-                }
-            )
+            let scriptParams = {
+                "client-id": "<?= $block->getClientId() ?>",
+                "commit": "false",
+                "intent": "authorize",
+                "components": "buttons,messages",
+                "vault": "false",
+                "merchant-id": "<?= $merchantId ?>",
+                "currency": "<?= $block->getCurrencyCode() ?>",
+                "data-partner-attribution-id": "<?= $block->getPayPalBnCode() ?>"
+            };
+
+            let enableFunding = "<?= $block->getEnableFundingParam() ?>";
+            if(enableFunding !== "") {
+                scriptParams['enable-funding'] = enableFunding;
+            }
+
+            window.paypalLoadScript(scriptParams);
         }
     </script>
     <div id='<?= $containerId ?>' class="iwd-paypal-wrapper" data-mage-init='<?= $block->getJsonConfig($containerId) ?>'></div>

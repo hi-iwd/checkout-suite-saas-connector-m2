@@ -45,7 +45,7 @@ class FormatData
             if($key === 'billing' || $key === 'shipping') {
                 $regionId = isset($item["region_id"]) ? $item["region_id"] : null;
 
-                if(!$regionId && $regionData = $this->getRegionDataFromNameIfExists($item["state"])) {
+                if(isset($item["state"]) && !$regionId && $regionData = $this->getRegionDataFromNameIfExists($item["state"])) {
                     $regionId = $regionData['region_id'];
                 }
 

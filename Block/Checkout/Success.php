@@ -11,6 +11,10 @@ use Magento\Checkout\Model\Session;
 use Magento\Sales\Model\OrderRepository;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayZeroConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCustomConfigProvider;
 
 class Success extends \Magento\Framework\View\Element\Template
 {
@@ -19,6 +23,10 @@ class Success extends \Magento\Framework\View\Element\Template
     private $orderRepository;
     private $checkMoConfigProvider;
     private $zeroConfigProvider;
+    private $purchaseOrderConfigProvider;
+    private $bankTransferConfigProvider;
+    private $cashOnDeliveryConfigProvider;
+    private $customConfigProvider;
 
     public function __construct(
         Context $context,
@@ -27,6 +35,10 @@ class Success extends \Magento\Framework\View\Element\Template
         OrderRepository $orderRepository,
         IWDCheckoutOfflinePayCheckmoConfigProvider $checkMoConfigProvider,
         IWDCheckoutOfflinePayZeroConfigProvider $zeroConfigProvider,
+        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $purchaseOrderConfigProvider,
+        IWDCheckoutOfflinePayBankTransferConfigProvider $bankTransferConfigProvider,
+        IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $cashOnDeliveryConfigProvider,
+        IWDCheckoutOfflinePayCustomConfigProvider $customConfigProvider,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -35,6 +47,10 @@ class Success extends \Magento\Framework\View\Element\Template
         $this->orderRepository = $orderRepository;
         $this->checkMoConfigProvider = $checkMoConfigProvider;
         $this->zeroConfigProvider = $zeroConfigProvider;
+        $this->purchaseOrderConfigProvider = $purchaseOrderConfigProvider;
+        $this->bankTransferConfigProvider = $bankTransferConfigProvider;
+        $this->cashOnDeliveryConfigProvider = $cashOnDeliveryConfigProvider;
+        $this->customConfigProvider = $customConfigProvider;
     }
 
     public function getObj(){
@@ -47,12 +63,16 @@ class Success extends \Magento\Framework\View\Element\Template
         $payment = $order->getPayment();
         $method = $payment->getMethodInstance();
         $paymentMethodDetails = $this->getPaymentMethodeDetailsByCode($method->getCode());
+
+        if($method->getCode() == 'iwd_checkout_offline_pay_purchaseorder'){
+            if($payment->getPoNumber() && !empty($payment->getPoNumber())){
+                $paymentMethodDetails['po_number'] = $payment->getPoNumber();
+            }
+        }
+
         return $paymentMethodDetails;
     }
 
-    public function getObjData1(){
-        return $this->checkoutSession->getData();
-    }
 
     public function loadOrderById($id){
         return $this->orderRepository->get($id);
@@ -65,6 +85,18 @@ class Success extends \Magento\Framework\View\Element\Template
                 break;
             case 'iwd_checkout_offline_pay_zero':
                 $configProvider = $this->zeroConfigProvider;
+                break;
+            case 'iwd_checkout_offline_pay_purchaseorder':
+                $configProvider = $this->purchaseOrderConfigProvider;
+                break;
+            case 'iwd_checkout_offline_pay_banktransfer':
+                $configProvider = $this->bankTransferConfigProvider;
+                break;
+            case 'iwd_checkout_offline_pay_cashondelivery':
+                $configProvider = $this->cashOnDeliveryConfigProvider;
+                break;
+            case 'iwd_checkout_offline_pay_custom':
+                $configProvider = $this->customConfigProvider;
                 break;
 
         }

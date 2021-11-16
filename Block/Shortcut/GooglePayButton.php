@@ -120,6 +120,10 @@ class GooglePayButton extends Template implements ShortcutInterface
 
         $gPayConfig = $this->configProvider->getConfigData('google_pay_minicart');
 
+        if (empty($gPayConfig) || $gPayConfig = '[]') {
+            return null;
+        }
+
         $buttons = [];
         foreach (json_decode($gPayConfig) as $item => $value){
             $buttons[] = $item;

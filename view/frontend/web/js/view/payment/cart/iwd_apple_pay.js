@@ -85,7 +85,7 @@ define(
                             amount: 0,
                         },
                         supportedNetworks: ['amex', 'masterCard', 'visa' ],
-                        merchantCapabilities: [ 'supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit' ]
+                        merchantCapabilities: [ 'supports3DS', 'supportsCredit', 'supportsDebit' ]
                     }
 
                     let session = new ApplePaySession(1,paymentRequest);

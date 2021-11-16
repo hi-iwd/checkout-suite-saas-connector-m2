@@ -55,6 +55,46 @@
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\Zero</model>
                 <group>offline</group>
             </iwd_checkout_offline_pay_zero>
+            <iwd_checkout_offline_pay_cashondelivery>
+                <active>1</active>
+                <title>IWD Checkout Offline Cash On Delivery</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWD\CheckoutConnector\Model\OfflinePayment\CashOnDelivery</model>
+                <group>offline</group>
+                <extra_details></extra_details>
+                <instruction></instruction>
+            </iwd_checkout_offline_pay_cashondelivery>
+            <iwd_checkout_offline_pay_banktransfer>
+                <active>1</active>
+                <title>IWD Checkout Offline Bank Transfer</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWD\CheckoutConnector\Model\OfflinePayment\BankTransfer</model>
+                <group>offline</group>
+                <extra_details></extra_details>
+                <instruction></instruction>
+            </iwd_checkout_offline_pay_banktransfer>
+            <iwd_checkout_offline_pay_purchaseorder>
+                <active>1</active>
+                <title>IWD Checkout Offline Purchase Order</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWD\CheckoutConnector\Model\OfflinePayment\PurchaseOrder</model>
+                <group>offline</group>
+                <extra_details></extra_details>
+                <instruction></instruction>
+            </iwd_checkout_offline_pay_purchaseorder>
+            <iwd_checkout_offline_pay_custom>
+                <active>1</active>
+                <title>IWD Checkout Offline Custom</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWD\CheckoutConnector\Model\OfflinePayment\Custom</model>
+                <group>offline</group>
+                <extra_details></extra_details>
+                <instruction></instruction>
+            </iwd_checkout_offline_pay_custom>
         </payment>
         <carriers>
             <subscription>

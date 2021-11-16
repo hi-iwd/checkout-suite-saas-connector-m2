@@ -14,8 +14,12 @@ use IWD\CheckoutConnector\Model\Cart\CartItems;
 use IWD\CheckoutConnector\Model\Cart\CartTotals;
 use IWD\CheckoutConnector\Model\Quote\Quote;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayZeroConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCustomConfigProvider;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\Exception\LocalizedException;
@@ -129,6 +133,11 @@ class Order implements OrderInterface
     private $IWDCheckoutPayConfigProvider;
 
     /**
+     * @var IWDCheckoutOfflinePayCashOnDeliveryConfigProvider
+     */
+    private $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+
+    /**
      * @var IWDCheckoutOfflinePayCheckmoConfigProvider
      */
     private $IWDCheckoutOfflinePayCheckmoConfigProvider;
@@ -137,6 +146,21 @@ class Order implements OrderInterface
      * @var IWDCheckoutOfflinePayZeroConfigProvider
      */
     private $IWDCheckoutOfflinePayZeroConfigProvider;
+
+    /**
+     * @var IWDCheckoutOfflinePayBankTransferConfigProvider
+     */
+    private $IWDCheckoutOfflinePayBankTransferConfigProvider;
+
+    /**
+     * @var IWDCheckoutOfflinePayPurchaseOrderConfigProvider
+     */
+    private $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+
+    /**
+     * @var
+     */
+    private $IWDCheckoutOfflinePayCustomConfigProvider;
 
     /**
      * @var Quote
@@ -188,8 +212,12 @@ class Order implements OrderInterface
         PaymentRepositoryInterface $paymentRepositoryInterface,
         PaymentInterfaceFactory $paymentInterface,
         IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
+        IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider,
         IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider,
         IWDCheckoutOfflinePayZeroConfigProvider $IWDCheckoutOfflinePayZeroConfigProvider,
+        IWDCheckoutOfflinePayBankTransferConfigProvider $IWDCheckoutOfflinePayBankTransferConfigProvider,
+        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
+        IWDCheckoutOfflinePayCustomConfigProvider $IWDCheckoutOfflinePayCustomConfigProvider,
         Quote $quote,
         StoreManagerInterface $storeManager
     ) {
@@ -211,8 +239,12 @@ class Order implements OrderInterface
         $this->paymentRepositoryInterface = $paymentRepositoryInterface;
         $this->paymentInterface = $paymentInterface;
         $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
+        $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider = $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
         $this->IWDCheckoutOfflinePayCheckmoConfigProvider = $IWDCheckoutOfflinePayCheckmoConfigProvider;
         $this->IWDCheckoutOfflinePayZeroConfigProvider = $IWDCheckoutOfflinePayZeroConfigProvider;
+        $this->IWDCheckoutOfflinePayBankTransferConfigProvider = $IWDCheckoutOfflinePayBankTransferConfigProvider;
+        $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider = $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+        $this->IWDCheckoutOfflinePayCustomConfigProvider = $IWDCheckoutOfflinePayCustomConfigProvider;
         $this->quote = $quote;
         $this->storeManager = $storeManager;
     }
@@ -342,13 +374,6 @@ class Order implements OrderInterface
             return 'Permissions Denied!';
         }
 
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/offlineOrderCreate.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-        $logger->info($quote_id);
-        $logger->info(print_r($access_tokens,1));
-        $logger->info(print_r($data,1));
-
         $quote = $this->quote->getQuote($quote_id);
 
         // Set currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
@@ -374,6 +399,11 @@ class Order implements OrderInterface
         // IWD Checkout Pay Collection
 
         switch ($data['payment_method_code']){
+            case 'cash_on_delivery':
+                $paymentMethodCode = $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->getPaymentMethodCode();
+                $paymentTitle = $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->getConfigData('title');
+                $order_status = $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->getConfigData('order_status');
+                break;
             case 'check_or_money_order':
                 $paymentMethodCode = $this->IWDCheckoutOfflinePayCheckmoConfigProvider->getPaymentMethodCode();
                 $paymentTitle = $this->IWDCheckoutOfflinePayCheckmoConfigProvider->getConfigData('title');
@@ -384,12 +414,25 @@ class Order implements OrderInterface
                 $paymentTitle = $this->IWDCheckoutOfflinePayZeroConfigProvider->getConfigData('title');
                 $order_status = $this->IWDCheckoutOfflinePayZeroConfigProvider->getConfigData('order_status');
                 break;
+            case 'banktransfer':
+                $paymentMethodCode = $this->IWDCheckoutOfflinePayBankTransferConfigProvider->getPaymentMethodCode();
+                $paymentTitle = $this->IWDCheckoutOfflinePayBankTransferConfigProvider->getConfigData('title');
+                $order_status = $this->IWDCheckoutOfflinePayBankTransferConfigProvider->getConfigData('order_status');
+                break;
+            case 'purchaseorder':
+                $paymentMethodCode = $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->getPaymentMethodCode();
+                $paymentTitle = $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->getConfigData('title');
+                $order_status = $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->getConfigData('order_status');
+                break;
+            case 'custom':
+                $paymentMethodCode = $this->IWDCheckoutOfflinePayCustomConfigProvider->getPaymentMethodCode();
+                $paymentTitle = $this->IWDCheckoutOfflinePayCustomConfigProvider->getConfigData('title');
+                $order_status = $this->IWDCheckoutOfflinePayCustomConfigProvider->getConfigData('order_status');
+                break;
         }
 
         $payment = $this->paymentInterface->create();
         $payment->setPaymentMethod($paymentTitle);
-
-        $logger->info('$paymentMethodCode = ' . $paymentMethodCode);
 
         // Set Payment Method
         $quote->setPaymentMethod($paymentMethodCode);
@@ -400,6 +443,10 @@ class Order implements OrderInterface
 
         //Set Real Payment Method Title
         //$quote->getPayment()->setAdditionalInformation(array('iwd_method_title' => $data['payment_method_title']));
+
+        if($data['payment_method_code'] == 'purchaseorder' && isset($data['po_number']) && !empty($data['po_number'])){
+            $quote->getPayment()->setPoNumber($data['po_number']);
+        }
 
         // Collect Totals & Save Quote
         $quote->collectTotals()->save();
@@ -512,10 +559,19 @@ class Order implements OrderInterface
 
         $quote = $this->quote->getQuote($quote_id);
 
+        if (!$quote->getReservedOrderId()) {
+            try {
+                $quote->reserveOrderId()->save();
+            } catch (\Exception $e) {
+                $this->logger->debug($e->getMessage());
+            }
+        }
+
         $result['addresses']              = $this->address->formatAddress($quote);
         $result['chosen_delivery_method'] = $this->shippingMethods->getSelectedShippingMethod($quote);
         $result['cart_items']             = $this->cartItems->getItems($quote);
         $result['cart']                   = $this->cartTotals->getTotals($quote);
+        $result['order_id']               = $quote->getReservedOrderId();
 
         return $result;
     }
