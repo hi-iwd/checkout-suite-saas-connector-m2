@@ -43,5 +43,13 @@
                 </arguments>
             </block>
         </referenceContainer>
+        <referenceContainer name="product.info.main">
+            <block name="iwd.product.paypal.msg"
+                   template="IWD_CheckoutConnector::product/view/product_msg.phtml" before="-">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">IWD\CheckoutConnector\ViewModel\ProductMsg</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
     </body>
 </page>

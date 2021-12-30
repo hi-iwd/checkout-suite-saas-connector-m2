@@ -37,7 +37,7 @@
             <!-- Offline Payments -->
             <iwd_checkout_offline_pay_checkmo>
                 <active>1</active>
-                <title>IWD Checkout Offline Check Pay</title>
+                <title>Dominate Checkout Offline Check Pay</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\Checkmo</model>
@@ -49,7 +49,7 @@
             </iwd_checkout_offline_pay_checkmo>
             <iwd_checkout_offline_pay_zero>
                 <active>1</active>
-                <title>IWD Checkout Offline Zero Pay</title>
+                <title>Dominate Checkout Offline Zero Pay</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\Zero</model>
@@ -57,7 +57,7 @@
             </iwd_checkout_offline_pay_zero>
             <iwd_checkout_offline_pay_cashondelivery>
                 <active>1</active>
-                <title>IWD Checkout Offline Cash On Delivery</title>
+                <title>Dominate Checkout Offline Cash On Delivery</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\CashOnDelivery</model>
@@ -67,7 +67,7 @@
             </iwd_checkout_offline_pay_cashondelivery>
             <iwd_checkout_offline_pay_banktransfer>
                 <active>1</active>
-                <title>IWD Checkout Offline Bank Transfer</title>
+                <title>Dominate Checkout Offline Bank Transfer</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\BankTransfer</model>
@@ -77,7 +77,7 @@
             </iwd_checkout_offline_pay_banktransfer>
             <iwd_checkout_offline_pay_purchaseorder>
                 <active>1</active>
-                <title>IWD Checkout Offline Purchase Order</title>
+                <title>Dominate Checkout Offline Purchase Order</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\PurchaseOrder</model>
@@ -87,7 +87,7 @@
             </iwd_checkout_offline_pay_purchaseorder>
             <iwd_checkout_offline_pay_custom>
                 <active>1</active>
-                <title>IWD Checkout Offline Custom</title>
+                <title>Dominate Checkout Offline Custom</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWD\CheckoutConnector\Model\OfflinePayment\Custom</model>

@@ -30,7 +30,8 @@ define(
                 self._super();
 
                 if (window.paypal) {
-                    let paypal = window.paypal;
+                    let paypal = window.paypal,
+                        clickedFundingSource = 'paypal';
 
                     paypal.Buttons({
                         fundingSource: self.creditStatus == 1 || self.venmoStatus == 1 ? '' : 'paypal',
@@ -44,6 +45,10 @@ define(
                             tagline: false,
                         },
 
+                        onClick: function(data)  {
+                            clickedFundingSource = data.fundingSource;
+                        },
+
                         createOrder: function(data, actions) {
                             return actions.order.create({
                                 purchase_units: [{
@@ -55,7 +60,8 @@ define(
                         },
 
                         onApprove: function(data) {
-                            window.location.href = self.checkoutPageUrl + '?paypal_order_id=' + data.orderID;
+                            window.location.href = self.checkoutPageUrl + '?paypal_order_id=' + data.orderID
+                                + '&paypal_funding_source=' + clickedFundingSource;
                         }
                     }).render('#' + self.containerId);
                 }

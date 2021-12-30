@@ -189,7 +189,7 @@ class ApiAccessChecker extends AbstractHelper
                 case 'wrong_platform':
                     return "Your current Platform Type differs from the Platform saved for your Store. Please go to your $checkoutAdminUrl on our $iwdSiteUrl, change Platform to '$platform' and Save.";
                 case 'api_key_empty':
-                    return "Please enter the Store API Key. You can find it after purchasing IWD Checkout SaaS in $checkoutAdminUrl on our $iwdSiteUrl";
+                    return "Please enter the Store API Key. You can find it after purchasing Dominate Checkout SaaS in $checkoutAdminUrl on our $iwdSiteUrl";
                 case 'connect_error':
                     return "Could not connect to server API. Please contact our $iwdSiteUrl support";
             }

@@ -69,7 +69,7 @@ class ShippingMethods
         $result = [];
 
         foreach ($output as $key => $method) {
-            if($method->getAvailable()) {
+            if($method->getAvailable() && $method->getMethodCode() != 'subscription') {
                 $result[] = [
                     'method_code'   => $method->getCarrierCode().'_'.$method->getMethodCode(),
                     'carrier_title' => $method->getCarrierTitle(),

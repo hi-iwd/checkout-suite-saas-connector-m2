@@ -118,6 +118,10 @@ class Frame extends CheckoutOnepage
             $params['paypal_order_id'] = $requestParams['paypal_order_id'];
         }
 
+        if(isset($requestParams['paypal_funding_source']) && $requestParams['paypal_funding_source']) {
+            $params['paypal_funding_source'] = $requestParams['paypal_funding_source'];
+        }
+
         if($this->customerSession->isLoggedIn()) {
             $params['customer_token'] = $this->getCustomerToken();
         }

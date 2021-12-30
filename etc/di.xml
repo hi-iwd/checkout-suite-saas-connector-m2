@@ -37,9 +37,7 @@
     <preference for="IWD\CheckoutConnector\Api\TransactionInformationInterface" type="IWD\CheckoutConnector\Model\GooglePay\TransactionInformation" />
     <preference for="IWD\CheckoutConnector\Api\OfflinePaymentMethodInterface" type="IWD\CheckoutConnector\Model\OfflinePaymentMethod" />
 
-
-
-    <!-- IWD Checkout Pay Payment Method -->
+    <!-- Dominate Checkout Pay Payment Method -->
     <virtualType name="IWDCheckoutPayFacade" type="IWD\CheckoutConnector\Model\Method\IWDCheckoutPay">
         <arguments>
             <argument name="code" xsi:type="const">IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider::CODE</argument>

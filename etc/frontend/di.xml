@@ -37,7 +37,7 @@
         <plugin name="extra_data" type="IWD\CheckoutConnector\Plugin\Checkout\CustomerData\Cart"/>
     </type>
 
-    <!-- Add IWD Checkout PayPal Shortcut Buttons -->
+    <!-- Add Dominate Checkout PayPal Shortcut Buttons -->
     <type name="IWD\CheckoutConnector\Block\Shortcut\PayPalButton">
         <arguments>
             <argument name="data" xsi:type="array">
@@ -47,7 +47,7 @@
         </arguments>
     </type>
 
-    <!-- Add IWD Checkout Apple Shortcut Buttons -->
+    <!-- Add Dominate Checkout Apple Shortcut Buttons -->
     <type name="IWD\CheckoutConnector\Block\Shortcut\AppleButton">
         <arguments>
             <argument name="data" xsi:type="array">

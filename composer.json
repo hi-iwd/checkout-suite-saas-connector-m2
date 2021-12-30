@@ -1,8 +1,8 @@
 {
-  "name": "iwd/dominate-saas",
-  "description": "IWD Checkout Connector",
+  "name": "iwd/opc",
+  "description": "Dominate Checkout Connector",
   "type": "magento2-module",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "license": [
     "proprietary"
   ],

@@ -5,7 +5,7 @@
         <column name="iwd_checkout_pay" class="IWD\CheckoutConnector\Ui\Component\Listing\Column\PaymentMethod">
             <settings>
                 <filter>text</filter>
-                <label translate="true">IWD Payment Title</label>
+                <label translate="true">Dominate Payment Title</label>
                 <visible>false</visible>
             </settings>
         </column>

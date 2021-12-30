@@ -1,4 +1,4 @@
-**IWD Checkout Connector Extension**
+**Dominate Checkout Connector Extension**
 
 Magento version - 2.x.x
 

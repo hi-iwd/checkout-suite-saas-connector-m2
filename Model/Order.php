@@ -34,6 +34,7 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use IWD\CheckoutConnector\Helper\CreditCard;
 
 /**
  * Class Order
@@ -173,6 +174,11 @@ class Order implements OrderInterface
     protected $storeManager;
 
     /**
+     * @var CreditCard
+     */
+    protected $creditCard;
+
+    /**
      * Order constructor.
      *
      * @param QuoteFactory $quoteFactory
@@ -219,7 +225,8 @@ class Order implements OrderInterface
         IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
         IWDCheckoutOfflinePayCustomConfigProvider $IWDCheckoutOfflinePayCustomConfigProvider,
         Quote $quote,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        CreditCard $creditCard
     ) {
         $this->quoteFactory = $quoteFactory;
         $this->quoteManagement = $quoteManagement;
@@ -247,6 +254,7 @@ class Order implements OrderInterface
         $this->IWDCheckoutOfflinePayCustomConfigProvider = $IWDCheckoutOfflinePayCustomConfigProvider;
         $this->quote = $quote;
         $this->storeManager = $storeManager;
+        $this->creditCard = $creditCard;
     }
 
     /**
@@ -286,7 +294,7 @@ class Order implements OrderInterface
             $quote->setCustomerEmail($quote->getCustomer()->getEmail());
         }
 
-        // IWD Checkout Pay Collection
+        // Dominate Checkout Pay Collection
         $paymentMethodCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
         $payment = $this->paymentInterface->create();
         $payment->setPaymentMethod($data['payment_method_title']);
@@ -326,6 +334,18 @@ class Order implements OrderInterface
             $order->getPayment()->setIsTransactionClosed(0);
 
             $order->getPayment()->setAdditionalInformation(array('iwd_method_title' => $data['payment_method_title']));
+
+            //SAVE CREDIT CARD Auth Net OR Braintree
+            if(!empty($data['saved_credit_card'])){
+                $savedCreditCard = $this->creditCard->saveCreditCard($order,$data);
+                if(!empty($savedCreditCard)){
+                    $order->getPayment()->setMethod($savedCreditCard['method']);
+                    $order->getPayment()->setAdditionalInformation('cc_id', $savedCreditCard['cc_id']);
+                    $order->getPayment()->setAmountAuthorized($order->getGrandTotal());
+                    $order->getPayment()->setBaseAmountAuthorized($order->getBaseGrandTotal());
+                    $transactions = $data['saved_credit_card']['transactions'];
+                }
+            }
 
             if ($paymentAction == 'authorize') {
                 $this->orderHelper->addTransactionToOrder($order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized');
@@ -396,7 +416,7 @@ class Order implements OrderInterface
             $quote->setCustomerEmail($quote->getCustomer()->getEmail());
         }
 
-        // IWD Checkout Pay Collection
+        // Dominate Checkout Pay Collection
 
         switch ($data['payment_method_code']){
             case 'cash_on_delivery':

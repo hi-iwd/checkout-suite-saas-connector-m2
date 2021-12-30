@@ -125,11 +125,15 @@ define(
             },
 
             /**
-             * Remove paypal_order_id param from url
+             * Remove paypal_order_id & paypal_funding_source params from url
              */
             removePayPalParamFromUrl: function () {
                 history.replaceState && history.replaceState(
-                    null, '', location.pathname + location.search.replace(/[\?&]paypal_order_id=[^&]+/, '').replace(/^&/, '?')
+                    null, '', location.pathname
+                        + location.search
+                            .replace(/[\?&]paypal_order_id=[^&]+/, '')
+                            .replace(/[\?&]paypal_funding_source=[^&]+/, '')
+                            .replace(/^&/, '?')
                 );
             },
 

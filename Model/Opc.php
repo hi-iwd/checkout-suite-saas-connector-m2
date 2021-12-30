@@ -142,10 +142,14 @@ class Opc implements OpcInterface
             $response['saved_addresses'] = $this->address->getSavedCustomerAddresses($quote);
 
             $customerAddresses = $this->address->getCustomerAddresses($quote);
-
+            
             if ($customerAddresses) {
-                $quote->getShippingAddress()->addData($customerAddresses['shipping']);
-                $quote->getBillingAddress()->addData($customerAddresses['billing']);
+                if(!empty($customerAddresses['shipping'])){
+                    $quote->getShippingAddress()->addData($customerAddresses['shipping']);
+                }
+                if(!empty($customerAddresses['billing'])){
+                    $quote->getBillingAddress()->addData($customerAddresses['billing']);
+                }
             }
         }
 
