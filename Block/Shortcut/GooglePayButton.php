@@ -109,7 +109,7 @@ class GooglePayButton extends Template implements ShortcutInterface
 
     protected function _toHtml()
     {
-        if (!$this->helper->isEnable() && !empty($this->configProvider->getConfigData('google_pay_minicart'))) {
+        if (!$this->helper->isEnable() || empty($this->configProvider->getConfigData('google_pay_minicart'))) {
             return '';
         }
 
@@ -117,10 +117,9 @@ class GooglePayButton extends Template implements ShortcutInterface
     }
     public function getConfigData()
     {
-
         $gPayConfig = $this->configProvider->getConfigData('google_pay_minicart');
 
-        if (empty($gPayConfig) || $gPayConfig = '[]') {
+        if (empty($gPayConfig)) {
             return null;
         }
 
@@ -167,8 +166,6 @@ class GooglePayButton extends Template implements ShortcutInterface
                         "price" =>  number_format($this->session->getQuote()->getShippingAmount(),2,'.',''),
                         "status" => "FINAL"
                     ],
-
-
                 ],
                 'currencyCode' => $this->session->getQuote()->getBaseCurrencyCode(),
                 'totalPriceStatus' => "FINAL",
@@ -191,5 +188,4 @@ class GooglePayButton extends Template implements ShortcutInterface
 
         return $data;
     }
-
 }

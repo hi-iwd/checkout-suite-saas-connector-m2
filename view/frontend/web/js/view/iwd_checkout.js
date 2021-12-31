@@ -173,10 +173,6 @@ define(
                                 console.log('ApplePay is possible on this browser, but not currently activated.');
                             }
                         });
-                    } else {
-                        //skip for now
-                        //sendPostMessageToIframe({type:'isAppleAvailable',isAppleAvailable:0});
-                        console.log('ApplePay is not available on this browser');
                     }
                 }
 

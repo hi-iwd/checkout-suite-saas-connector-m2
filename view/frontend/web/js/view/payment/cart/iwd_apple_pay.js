@@ -52,8 +52,6 @@ define(
                             console.log('ApplePay is possible on this browser, but not currently activated.');
                         }
                     });
-                } else {
-                    console.log('ApplePay is not available on this browser');
                 }
             },
 
