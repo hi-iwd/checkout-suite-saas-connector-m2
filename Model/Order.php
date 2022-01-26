@@ -532,13 +532,13 @@ class Order implements OrderInterface
         if ($order->getEntityId()) {
             //Set Transactions for order
             $paymentAction = $data['payment_action'];
-            $transaction = $data['transaction'];
+            $transaction = isset($data['transaction']) && $data['transaction'] ? $data['transaction'] : NULL;
 
-            if ($paymentAction == 'capture') {
+            if ($paymentAction == 'capture' && $transaction) {
                 $order->getPayment()->setIsTransactionClosed(0);
                 $this->orderHelper->addTransactionToOrder($order, $transaction, Transaction::TYPE_CAPTURE, 'captured');
                 $this->invoiceManagement->addInvoiceToOrder($order, $transaction['capture']['id']);
-            } elseif ($paymentAction == 'refund') {
+            } elseif ($paymentAction == 'refund' && $transaction) {
                 $this->orderHelper->addTransactionToOrder($order, $transaction, Transaction::TYPE_REFUND, 'refunded');
                 $this->invoiceManagement->refundInvoiceByOrder($order, $transaction['refund']['id']);
 
@@ -547,6 +547,16 @@ class Order implements OrderInterface
                 $order->getPayment()->setHasMessage(true);
                 $order->getPayment()->setMessage('Voided authorization.');
                 $order->getPayment()->registerVoidNotification();
+
+                $this->orderRepository->save($order);
+            } elseif ($paymentAction == 'hold') {
+                if(isset($transaction['dispute']['id'])) {
+                    $order->addCommentToStatusHistory('The Order was put on Hold because the Dispute with ID: '.$transaction['dispute']['id']
+                        .' has been opened. Please access your Braintree account for more information.');
+                } else {
+                    $order->addCommentToStatusHistory('Order was put on Hold.');
+                }
+                $order->hold();
 
                 $this->orderRepository->save($order);
             }
