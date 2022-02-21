@@ -6,6 +6,11 @@ use Magento\Framework\Json\Helper\Data as JsonHelper;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use IWD\CheckoutConnector\Block\Frame;
 
+/**
+ * Class BraintreeApplePay
+ *
+ * @package IWD\CheckoutConnector\ViewModel
+ */
 class BraintreeApplePay implements ArgumentInterface
 {
     /**

@@ -110,7 +110,7 @@ class DeliveryStep implements DeliveryStepInterface
      * @param string $quote_id
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return \IWD\CheckoutConnector\Api\array_iwd|string
+     * @return mixed[]|string
      */
     public function getData($quote_id, $access_tokens, $data = null)
     {
@@ -144,23 +144,6 @@ class DeliveryStep implements DeliveryStepInterface
         $this->storeManager->getStore($quote->getStoreId())
             ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
 
-        try{
-            if(!empty($data['apple_pay'])){
-                $region = $this->regionFactory->create();
-                $regionId = $region->loadByCode($data['shipping']['region_id'], $data['shipping']['country'])->getId();
-                $data['billing']['region_id'] = $regionId;
-                $data['shipping']['region_id'] = $regionId;
-
-                if(is_null($data['customer']['id'])){
-                    $quote->setCustomerEmail($data['customer']['email']);
-                    $quote->setCustomerFirstname($data['customer']['first_name']);
-                    $quote->setCustomerLastname($data['customer']['last_name']);
-                }
-            }
-        }catch (\Exception $e){
-
-        }
-
         $formattedAddressData = $this->formatData->format($data);
 
         // Set Customer Address for Quote
@@ -177,8 +160,7 @@ class DeliveryStep implements DeliveryStepInterface
                 $selectedShippingMethod = $this->shippingMethods->getSelectedShippingMethod($quote);
 
                 // If Shipping Method is not selected yet by the customer, select the first available one.
-                if(empty($selectedShippingMethod) || !empty($data['apple_pay'])
-                    || !$this->shippingMethods->isSelectedShippingMethodAvailable($shippingMethods, $selectedShippingMethod)) {
+                if(empty($selectedShippingMethod) || !$this->shippingMethods->isSelectedShippingMethodAvailable($shippingMethods, $selectedShippingMethod)) {
                     $selectedShippingMethod = $shippingMethods[0];
 
                     if(isset($data['force_choose_delivery']) && $data['force_choose_delivery']) {

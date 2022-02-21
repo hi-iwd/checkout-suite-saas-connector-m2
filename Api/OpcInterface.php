@@ -12,7 +12,7 @@ namespace IWD\CheckoutConnector\Api;
       * @api
       * @param string $quote_id
       * @param mixed $access_tokens
-      * @return array_iwd
+      * @return mixed[]|string
       */
      public function getData($quote_id, $access_tokens);
  }

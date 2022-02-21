@@ -65,38 +65,13 @@ class ProductRepository implements ProductRepositoryInterface
 
     /**
      * @param string $searchCriteria
-     * @return array
+     * @return mixed[]|string
      * @api
      */
     public function getList($searchCriteria)
     {
         $productsData = [];
-//        $this->filterGroup->setFilters([
-//            $this->filterBuilder
-//                ->setField(ProductInterface::NAME)
-//                ->setConditionType('like')
-//                ->setValue('%' . $searchCriteria)
-//                ->create(),
-//        $this->filterBuilder
-//            ->setField(ProductInterface::SKU)
-//            ->setConditionType('like')
-//            ->setValue('%' . $searchCriteria)
-//            ->create()
-////        ]);
 
-//        $this->searchCriteriaBuilder->addFilter('type_id', 'simple');
-////        $this->searchCriteriaBuilder->setFilterGroups([$this->filterGroup]);
-//        $this->searchCriteriaBuilder->addFilters(
-//            [$this->filterBuilder
-//                ->setField(ProductInterface::SKU)
-//                ->setConditionType('like')
-//                ->setValue('%' . $searchCriteria)
-//                ->create()]
-//        );
-//        $this->searchCriteriaBuilder->setPageSize(10);
-//
-//        $searchCriteria = $this->searchCriteriaBuilder->create();
-//        $productsItems = $this->productRepository->getList($searchCriteria)->getItems();
         $collection = $this->productCollection->create()
             ->addAttributeToSelect('*')
             ->addAttributeToFilter('visibility', array('in' => array(1, 2, 3, 4)))
@@ -106,6 +81,7 @@ class ProductRepository implements ProductRepositoryInterface
                     ['attribute' => 'sku', 'like' => '%'.$searchCriteria.'%']
                 ])
             ->addAttributeToFilter('type_id', ['eq' => 'simple'])->load();
+
         if ($collection) {
             foreach ($collection as $k => $product) {
                 $productsData[$k] = [

@@ -60,12 +60,6 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
-    <route url="/V1/googlepay/guest/:cartId/transaction-information" method="POST">
-        <service class="IWD\CheckoutConnector\Api\TransactionInformationInterface" method="calculate"/>
-        <resources>
-            <resource ref="anonymous" />
-        </resources>
-    </route>
     <route url="/V1/product" method="GET">
         <service class="IWD\CheckoutConnector\Api\ProductRepositoryInterface" method="getList"/>
         <resources>

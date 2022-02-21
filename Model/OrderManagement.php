@@ -17,7 +17,7 @@ use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
- * Class OrderManagment
+ * Class OrderManagement
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -107,7 +107,7 @@ class OrderManagement implements OrderManagementInterface
      * Perform place order.
      *
      * @param mixed $order
-     * @return array
+     * @return mixed[]|string
      * @throws \Exception
      */
     public function place($order)

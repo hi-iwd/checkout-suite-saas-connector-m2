@@ -103,7 +103,7 @@ class Opc implements OpcInterface
     /**
      * @param string $quote_id
      * @param mixed $access_tokens
-     * @return array|\IWD\CheckoutConnector\Api\array_iwd|mixed|string
+     * @return mixed[]|string
      */
     public function getData($quote_id, $access_tokens)
     {

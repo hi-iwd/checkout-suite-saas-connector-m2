@@ -19,8 +19,6 @@
                 <bn_code>IWD_SP_PCP</bn_code>
                 <btn_shape>rect</btn_shape>
                 <btn_color>gold</btn_color>
-                <apple_pay_minicart>null</apple_pay_minicart>
-                <google_pay_minicart>null</google_pay_minicart>
                 <credit_msg_logo_type>primary</credit_msg_logo_type>
                 <credit_msg_logo_position>left</credit_msg_logo_position>
                 <credit_msg_text_color>black</credit_msg_text_color>

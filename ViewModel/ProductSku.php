@@ -65,7 +65,7 @@ class ProductSku implements ArgumentInterface
     {
         return $this->scopeConfig->isSetFlag(
             'iwd_checkout_connector/general/enable_subscription',
-            ScopeInterface::SCOPE_STORE,
+            ScopeInterface::SCOPE_STORE
         );
     }
 }

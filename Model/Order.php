@@ -34,7 +34,6 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use IWD\CheckoutConnector\Helper\CreditCard;
 
 /**
  * Class Order
@@ -174,11 +173,6 @@ class Order implements OrderInterface
     protected $storeManager;
 
     /**
-     * @var CreditCard
-     */
-    protected $creditCard;
-
-    /**
      * Order constructor.
      *
      * @param QuoteFactory $quoteFactory
@@ -225,8 +219,7 @@ class Order implements OrderInterface
         IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
         IWDCheckoutOfflinePayCustomConfigProvider $IWDCheckoutOfflinePayCustomConfigProvider,
         Quote $quote,
-        StoreManagerInterface $storeManager,
-        CreditCard $creditCard
+        StoreManagerInterface $storeManager
     ) {
         $this->quoteFactory = $quoteFactory;
         $this->quoteManagement = $quoteManagement;
@@ -254,14 +247,13 @@ class Order implements OrderInterface
         $this->IWDCheckoutOfflinePayCustomConfigProvider = $IWDCheckoutOfflinePayCustomConfigProvider;
         $this->quote = $quote;
         $this->storeManager = $storeManager;
-        $this->creditCard = $creditCard;
     }
 
     /**
      * @param string $quote_id
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return \IWD\CheckoutConnector\Api\array_iwd|string
+     * @return mixed[]|string
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws Exception
@@ -332,20 +324,7 @@ class Order implements OrderInterface
             $transactions = $data['transactions'];
 
             $order->getPayment()->setIsTransactionClosed(0);
-
             $order->getPayment()->setAdditionalInformation(array('iwd_method_title' => $data['payment_method_title']));
-
-            //SAVE CREDIT CARD Auth Net OR Braintree
-            if(!empty($data['saved_credit_card'])){
-                $savedCreditCard = $this->creditCard->saveCreditCard($order,$data);
-                if(!empty($savedCreditCard)){
-                    $order->getPayment()->setMethod($savedCreditCard['method']);
-                    $order->getPayment()->setAdditionalInformation('cc_id', $savedCreditCard['cc_id']);
-                    $order->getPayment()->setAmountAuthorized($order->getGrandTotal());
-                    $order->getPayment()->setBaseAmountAuthorized($order->getBaseGrandTotal());
-                    $transactions = $data['saved_credit_card']['transactions'];
-                }
-            }
 
             if ($paymentAction == 'authorize') {
                 $this->orderHelper->addTransactionToOrder($order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized');
@@ -368,7 +347,6 @@ class Order implements OrderInterface
                 'order_status' => $order->getStatus(),
                 'quote_id' => $quote->getId(),
             ];
-
         } else {
             $result = [
                 'error' => 1,
@@ -383,7 +361,7 @@ class Order implements OrderInterface
      * @param string $quote_id
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return \IWD\CheckoutConnector\Api\array_iwd|string
+     * @return mixed[]|string
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws Exception
@@ -518,7 +496,7 @@ class Order implements OrderInterface
     /**
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return \IWD\CheckoutConnector\Api\array_iwd|string
+     * @return mixed[]|string
      */
     public function update($access_tokens, $data)
     {
@@ -578,7 +556,7 @@ class Order implements OrderInterface
     /**
      * @param string $quote_id
      * @param mixed $access_tokens
-     * @return \IWD\CheckoutConnector\Api\array_iwd|string
+     * @return mixed[]|string
      * @throws Exception
      */
     public function getQuoteData($quote_id, $access_tokens)

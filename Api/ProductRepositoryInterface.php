@@ -12,7 +12,7 @@ interface ProductRepositoryInterface
     /**
      * @api
      * @param string $searchCriteria
-     * @return array
+     * @return mixed[]|string
      */
     public function getList($searchCriteria);
 }

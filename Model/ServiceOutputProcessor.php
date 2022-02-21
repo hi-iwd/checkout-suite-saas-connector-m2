@@ -17,7 +17,7 @@ class ServiceOutputProcessor extends \Magento\Framework\Webapi\ServiceOutputProc
     {
         $dataType = $this->methodsMapProcessor->getMethodReturnType($serviceClassName, $serviceMethodName);
 
-        if ($dataType == 'array_iwd') {
+        if ($dataType == 'mixed[]') {
             return $data;
         } else {
             return $this->convertValue($data, $dataType);

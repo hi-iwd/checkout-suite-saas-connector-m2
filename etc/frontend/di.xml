@@ -47,25 +47,6 @@
         </arguments>
     </type>
 
-    <!-- Add Dominate Checkout Apple Shortcut Buttons -->
-    <type name="IWD\CheckoutConnector\Block\Shortcut\AppleButton">
-        <arguments>
-            <argument name="data" xsi:type="array">
-                <item name="template" xsi:type="string">IWD_CheckoutConnector::shortcut/iwd_apple_button.phtml</item>
-                <item name="alias" xsi:type="string">iwd.apple.button</item>
-            </argument>
-        </arguments>
-    </type>
-
-    <type name="IWD\CheckoutConnector\Block\Shortcut\GooglePayButton">
-        <arguments>
-            <argument name="data" xsi:type="array">
-                <item name="template" xsi:type="string">IWD_CheckoutConnector::shortcut/iwd_google_pay.phtml</item>
-                <item name="alias" xsi:type="string">iwd.google.button</item>
-            </argument>
-        </arguments>
-    </type>
-
     <type name="IWD\CheckoutConnector\Controller\Action">
         <arguments>
             <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>

@@ -1,7 +1,6 @@
 <?php
 namespace IWD\CheckoutConnector\Model;
 
-use IWD\CheckoutConnector\Api\array_iwd;
 use IWD\CheckoutConnector\Api\UpdateConfigInterface;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
@@ -70,7 +69,7 @@ class UpdateConfig implements UpdateConfigInterface
     /**
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return array_iwd|string
+     * @return mixed[]|string
      */
     public function updateConfig($access_tokens, $data)
     {
@@ -80,18 +79,6 @@ class UpdateConfig implements UpdateConfigInterface
 
         if(isset($data['paypal']) && $data['paypal']) {
             $this->IWDCheckoutPayConfigProvider->updateConfig($data['paypal']);
-        }
-
-        if(isset($data['apple_pay_minicart']) && $data['apple_pay_minicart']) {
-            $this->IWDCheckoutPayConfigProvider->updateConfig(array('apple_pay_minicart' => $data['apple_pay_minicart']));
-        }
-
-        if(isset($data['google_pay_minicart']) && $data['google_pay_minicart']) {
-            $this->IWDCheckoutPayConfigProvider->updateConfig(array('google_pay_minicart' => $data['google_pay_minicart']));
-        }
-
-        if(isset($data['google_pay_info']) && $data['google_pay_info']) {
-            $this->IWDCheckoutPayConfigProvider->updateConfig(array('google_pay_info' => $data['google_pay_info']));
         }
 
         if(isset($data['offline_payments']) && $data['offline_payments']) {
@@ -129,6 +116,6 @@ class UpdateConfig implements UpdateConfigInterface
             }
         }
 
-        return $this->IWDCheckoutPayConfigProvider->getConfigData('google_pay_info');
+        return 'Success!';
     }
 }

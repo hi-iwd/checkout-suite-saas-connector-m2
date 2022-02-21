@@ -60,6 +60,7 @@ class OfflinePaymentMethod implements OfflinePaymentMethodInterface
 
     /**
      * @param mixed $access_tokens
+     * @return mixed[]|string
      */
     public function getShippingMethods($access_tokens)
     {
@@ -91,7 +92,7 @@ class OfflinePaymentMethod implements OfflinePaymentMethodInterface
 
     /**
      * @param $access_tokens
-     * @return array|string
+     * @return mixed[]|string
      */
     public function getOrderStatus($access_tokens)
     {

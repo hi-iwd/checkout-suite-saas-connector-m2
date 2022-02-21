@@ -6,7 +6,7 @@ interface OrderManagementInterface
 {
     /**
      * @param mixed
-     * @return array
+     * @return mixed[]|string
      */
     public function place($order);
 }

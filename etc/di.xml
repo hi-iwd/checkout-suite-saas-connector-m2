@@ -34,7 +34,6 @@
     <preference for="IWD\CheckoutConnector\Api\ApplyCouponInterface" type="IWD\CheckoutConnector\Model\ApplyCoupon"/>
     <preference for="IWD\CheckoutConnector\Api\OrderInterface" type="IWD\CheckoutConnector\Model\Order" />
     <preference for="IWD\CheckoutConnector\Api\UpdateConfigInterface" type="IWD\CheckoutConnector\Model\UpdateConfig" />
-    <preference for="IWD\CheckoutConnector\Api\TransactionInformationInterface" type="IWD\CheckoutConnector\Model\GooglePay\TransactionInformation" />
     <preference for="IWD\CheckoutConnector\Api\OfflinePaymentMethodInterface" type="IWD\CheckoutConnector\Model\OfflinePaymentMethod" />
 
     <!-- Dominate Checkout Pay Payment Method -->
@@ -72,8 +71,6 @@
         </arguments>
     </virtualType>
     <!-- END Cancel Command -->
-
-
 
     <!-- Void command -->
     <virtualType name="IWDCheckoutPayVoidCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">

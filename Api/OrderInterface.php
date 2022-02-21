@@ -14,7 +14,7 @@ interface OrderInterface
      * @param string $quote_id
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return array_iwd
+     * @return mixed[]|string
      */
     public function create($quote_id, $access_tokens, $data);
 
@@ -23,7 +23,7 @@ interface OrderInterface
      * @param string $quote_id
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return array_iwd
+     * @return mixed[]|string
      */
     public function offlineOrderCreate($quote_id, $access_tokens, $data);
 
@@ -31,7 +31,7 @@ interface OrderInterface
      * @api
      * @param mixed $access_tokens
      * @param mixed $data
-     * @return array_iwd
+     * @return mixed[]|string
      */
     public function update($access_tokens, $data);
 
@@ -39,7 +39,7 @@ interface OrderInterface
      * @api
      * @param string $quote_id
      * @param mixed $access_tokens
-     * @return array_iwd
+     * @return mixed[]|string
      */
     public function getQuoteData($quote_id, $access_tokens);
 }

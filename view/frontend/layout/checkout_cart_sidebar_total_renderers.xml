@@ -13,9 +13,6 @@
                                         <item name="extra" xsi:type="array">
                                             <item name="component" xsi:type="string">IWD_CheckoutConnector/js/view/payment/cart/iwd_paypal_credit_msg</item>
                                         </item>
-                                        <item name="componentApplePay" xsi:type="array">
-                                            <item name="component" xsi:type="string">IWD_CheckoutConnector/js/view/payment/cart/iwd_apple_pay</item>
-                                        </item>
                                     </item>
                                 </item>
                             </item>
