@@ -61,7 +61,10 @@ define([
                             color: _self.config.color
                         }
                     },
-                }).render(container);
+                }).render(container).catch((error) => {
+                    console.log("Failed to render the PayPal MSG", error);
+                    $(container).hide();
+                });
             }, 300);
         },
 

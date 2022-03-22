@@ -162,4 +162,8 @@
     <preference for="IWD\CheckoutConnector\Api\Data\SubscriptionInterface" type="IWD\CheckoutConnector\Model\Data\Subscription"/>
     <preference for="IWD\CheckoutConnector\Api\Data\SubscriptionSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
     <preference for="IWD\CheckoutConnector\Api\OrderManagementInterface" type="IWD\CheckoutConnector\Model\OrderManagement"/>
+
+    <type name="Magento\Shipping\Model\Shipping">
+        <plugin name="hide_subscription_shipping_methods" type="IWD\CheckoutConnector\Plugin\Shipping\HideShippingPlugin"/>
+    </type>
 </config>
