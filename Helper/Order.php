@@ -95,29 +95,49 @@ class Order extends AbstractHelper
     /**
      * @param $quote
      * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
-    public function assignCustomerToQuote($quote)
+    public function assignGuestCustomerToQuote($quote)
     {
         $customerEmail = $quote->getBillingAddress()->getEmail();
 
-        $customer = $this->customerFactory->create();
-        $customer->setWebsiteId($quote->getWebsiteId());
-        $customer->loadByEmail($customerEmail);
-
-        if (!$customer->getEntityId()) {
-            // Assign Guest Customer if customer with email is not registered in our system
-            $quote->setCustomerId(null)
-                ->setCustomerEmail($customerEmail)
-                ->setCustomerIsGuest(true)
-                ->setCustomerGroupId(Group::NOT_LOGGED_IN_ID);
-        } else {
-            // Assign Existing Customer
-            $customer = $this->customerRepository->getById($customer->getEntityId());
-            $quote->assignCustomer($customer);
-        }
+        $quote->setCustomerId(null)
+            ->setCustomerEmail($customerEmail)
+            ->setCustomerIsGuest(true)
+            ->setCustomerGroupId(Group::NOT_LOGGED_IN_ID);
 
         $quote->save();
+    }
+
+    /**
+     * @param $order
+     */
+    public function assignCustomerToOrder($order)
+    {
+        $customerEmail = $order->getCustomerEmail();
+        $customer = $this->customerFactory->create()
+            ->setWebsiteId($order->getStore()->getWebsiteId())
+            ->loadByEmail($customerEmail);
+
+        if ($customer && $customer->getId()) {
+            try {
+                if (!$order->getCustomerId()) {
+                    if ($customer->getId()) {
+                        $order->setCustomerId($customer->getId());
+                        $order->setCustomerGroupId($customer->getGroupId());
+                        $order->setCustomerIsGuest(0);
+                        $order->setCustomerFirstname($customer->getFirstname());
+                        $order->setCustomerLastname($customer->getLastname());
+
+                        if ($order->getShippingAddress()) {
+                            $order->getShippingAddress()->setCustomerId($customer->getId());
+                        }
+
+                        $order->getBillingAddress()->setCustomerId($customer->getId());
+                        $order->save();
+                    }
+                }
+            } catch (\Exception $e) {}
+        }
     }
 
     /**

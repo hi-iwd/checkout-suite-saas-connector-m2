@@ -1,8 +1,5 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
+
 namespace IWD\CheckoutConnector\Block\Info;
 
 class PurchaseOrder extends \Magento\Payment\Block\Info
@@ -19,7 +16,7 @@ class PurchaseOrder extends \Magento\Payment\Block\Info
         $this->configProvider = $configProvider;
     }
 
-    protected $_template = 'IWD_CheckoutConnector::info/purchaseorder.phtml';
+    protected $_template = 'IWD_CheckoutConnector::info/offline.phtml';
 
     public function getExtraDetails()
     {

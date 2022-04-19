@@ -7,6 +7,7 @@ use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflineMultiple;
 
 /**
  * Class UpdateConfig
@@ -43,6 +44,10 @@ class UpdateConfig implements UpdateConfigInterface
      * @var IWDCheckoutOfflinePayPurchaseOrderConfigProvider
      */
     private $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+    /**
+     * @var IWDCheckoutOfflineMultiple
+     */
+    private $IWDCheckoutOfflineMultiple;
 
     /**
      * UpdateConfig constructor.
@@ -56,7 +61,8 @@ class UpdateConfig implements UpdateConfigInterface
         IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider,
         IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider,
         IWDCheckoutOfflinePayBankTransferConfigProvider $IWDCheckoutOfflinePayBankTransferConfigProvider,
-        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider
+        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
+        IWDCheckoutOfflineMultiple $IWDCheckoutOfflineMultiple
     ) {
         $this->accessValidator = $accessValidator;
         $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
@@ -64,6 +70,7 @@ class UpdateConfig implements UpdateConfigInterface
         $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider = $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
         $this->IWDCheckoutOfflinePayBankTransferConfigProvider = $IWDCheckoutOfflinePayBankTransferConfigProvider;
         $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider = $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+        $this->IWDCheckoutOfflineMultiple = $IWDCheckoutOfflineMultiple;
     }
 
     /**
@@ -112,6 +119,12 @@ class UpdateConfig implements UpdateConfigInterface
                             }
                         }
                         break;
+                    default:
+                        foreach ($gateway_settings as $k => $v){
+                            if(!empty($v)){
+                                $this->IWDCheckoutOfflineMultiple->updateConfig(array($k => $v) , $gateway_type);
+                            }
+                        }
                 }
             }
         }

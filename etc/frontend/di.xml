@@ -5,7 +5,7 @@
     <type name="Magento\Framework\Url\SecurityInfo">
         <arguments>
             <argument name="secureUrlList" xsi:type="array">
-                <item name="checkout_index" xsi:type="string">/iwd_checkout</item>
+                <item name="checkout_index" xsi:type="string">/checkout_page</item>
             </argument>
         </arguments>
     </type>

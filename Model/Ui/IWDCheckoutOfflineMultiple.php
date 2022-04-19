@@ -7,11 +7,13 @@ use Magento\Payment\Gateway\Config\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use IWD\CheckoutConnector\Model\CacheCleanerFlag;
-use IWD\CheckoutConnector\Model\OfflinePayment\Custom;
 
-class IWDCheckoutOfflinePayCustomConfigProvider implements ConfigProviderInterface
+class IWDCheckoutOfflineMultiple implements ConfigProviderInterface
 {
-    const CODE = Custom::PAYMENT_METHOD_CUSTOM_CODE;
+
+    const CODE = 'iwd_checkout_multiple_payment';
+
+    public $code;
 
     private $config;
 
@@ -22,9 +24,10 @@ class IWDCheckoutOfflinePayCustomConfigProvider implements ConfigProviderInterfa
     private $cacheCleanerFlag;
 
     /**
-     * Retrieve assoc array of checkout configuration
-     *
-     * @return array
+     * @param Config $config
+     * @param ScopeConfigInterface $scopeConfig
+     * @param WriterInterface $configWriter
+     * @param CacheCleanerFlag $cacheCleanerFlag
      */
 
     public function __construct(
@@ -43,7 +46,7 @@ class IWDCheckoutOfflinePayCustomConfigProvider implements ConfigProviderInterfa
     {
         return [
             'payment' => [
-                self::CODE => [
+                $this->code => [
                     'label' => $this->config->getValue('label'),
                     'description' => $this->config->getValue('description')
                 ]
@@ -53,7 +56,7 @@ class IWDCheckoutOfflinePayCustomConfigProvider implements ConfigProviderInterfa
 
     public function getConfigPath($config)
     {
-        return 'payment/' . self::CODE . '/' . $config;
+        return 'payment/' . $this->code . '/' . $config;
     }
 
     public function getConfigData($config)
@@ -66,24 +69,32 @@ class IWDCheckoutOfflinePayCustomConfigProvider implements ConfigProviderInterfa
         return self::CODE;
     }
 
-    public function updateConfig($configs) {
+    public function updateConfig($configs, $key) {
         foreach($configs as $configCode => $configValue) {
-            $this->setConfigData($configCode, $configValue);
+            $this->setConfigData($configCode, $configValue, $key);
         }
 
         $this->cacheCleanerFlag->addFlag();
     }
 
-    public function setConfigData($config, $value)
+    public function setConfigData($config, $value, $key)
     {
-        $this->configWriter->save($this->getConfigPath($config),  $value, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0);
+        $this->configWriter->save('payment/' . $key . '/' . $config,  $value, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0);
     }
 
-    public function getTittle(){
+    public function getTittle($code){
+
+        $this->code = $code;
         return $this->getConfigData('title');
     }
 
-    public function getOrderStatus(){
+    public function getOrderStatus($code){
+
+        $this->code = $code;
         return $this->getConfigData('order_status');
+    }
+
+    public function setCode($code){
+        $this->code = $code;
     }
 }

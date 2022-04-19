@@ -78,4 +78,12 @@ class IWDCheckoutOfflinePayCashOnDeliveryConfigProvider implements ConfigProvide
     {
         $this->configWriter->save($this->getConfigPath($config),  $value, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0);
     }
+
+    public function getTittle(){
+        return $this->getConfigData('title');
+    }
+
+    public function getOrderStatus(){
+        return $this->getConfigData('order_status');
+    }
 }

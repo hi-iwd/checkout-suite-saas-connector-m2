@@ -47,6 +47,16 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IWDCheckoutPayOffline" type="IWD\CheckoutConnector\Model\Method\IWDCheckoutPay">
+        <arguments>
+            <argument name="code" xsi:type="string">iwd_checkout_multiple_payment</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">IWD\CheckoutConnector\Block\Info\MultipleOffline</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IWDCheckoutPayValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IWDCheckoutPayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Configuration reader -->
     <type name="IWD\CheckoutConnector\Gateway\Config\Config">
         <arguments>

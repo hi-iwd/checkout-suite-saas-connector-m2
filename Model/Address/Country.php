@@ -39,11 +39,12 @@ class Country
     }
 
     /**
+     * @param $quote
      * @return array
      */
-    public function getCountry()
+    public function getCountry($quote)
     {
-        $data = $this->countryCollection->loadByStore()
+        $data = $this->countryCollection->loadByStore($quote->getStoreId())
             ->setForegroundCountries($this->topDestinationCountries->getTopDestinations())
             ->toOptionArray();
 

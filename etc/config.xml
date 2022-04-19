@@ -93,6 +93,16 @@
                 <extra_details></extra_details>
                 <instruction></instruction>
             </iwd_checkout_offline_pay_custom>
+            <iwd_checkout_multiple_payment>
+                <active>1</active>
+                <title>Dominate Multiple Payment Method</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <model>IWDCheckoutPayOffline</model>
+                <group>offline</group>
+                <extra_details></extra_details>
+                <instruction></instruction>
+            </iwd_checkout_multiple_payment>
         </payment>
         <carriers>
             <subscription>

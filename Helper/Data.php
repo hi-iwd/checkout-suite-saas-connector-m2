@@ -18,7 +18,7 @@ use Magento\Store\Model\ScopeInterface;
 class Data extends AbstractHelper
 {
     const PLATFORM = 'Magento2';
-    const IWD_CHECKOUT_PAGE_PATH = 'iwd_checkout';
+    const IWD_CHECKOUT_PAGE_PATH = 'checkout_page';
     const IWD_CHECKOUT_APP_URL = 'https://checkout.iwdagency.com/';
     const XML_PATH_ENABLE = 'iwd_checkout_connector/general/enable';
     const XML_PATH_INTEGRATION_API_KEY = 'iwd_checkout_connector/general/integration_api_key';

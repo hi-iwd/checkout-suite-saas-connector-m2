@@ -2,13 +2,13 @@
 
 namespace IWD\CheckoutConnector\Block\Info;
 
-class Custom extends \Magento\Payment\Block\Info
+class MultipleOffline extends \Magento\Payment\Block\Info
 {
     private $configProvider;
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCustomConfigProvider $configProvider,
+        \IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflineMultiple $configProvider,
         array $data = []
     )
     {
@@ -17,7 +17,6 @@ class Custom extends \Magento\Payment\Block\Info
     }
 
     protected $_template = 'IWD_CheckoutConnector::info/offline.phtml';
-
 
     public function getExtraDetails()
     {
@@ -29,8 +28,21 @@ class Custom extends \Magento\Payment\Block\Info
         return $this->configProvider->getConfigData('instruction');
     }
 
+    public function getFieldName()
+    {
+        return $this->configProvider->getConfigData('field_name');
+    }
+
     public function getTitle()
     {
+        $code = $this->getInfo()->getOrder()->getPayment()->getAdditionalInformation('iwd_method_code');
+        $this->configProvider->setCode($code);
+
         return $this->configProvider->getConfigData('title');
+    }
+
+    public function getPONumber()
+    {
+        return $this->getInfo()->getOrder()->getPayment()->getPoNumber();
     }
 }

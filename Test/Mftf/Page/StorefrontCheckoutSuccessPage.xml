@@ -2,7 +2,7 @@
 
 <pages xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../../../../vendor/magento/magento2-functional-testing-framework/src/Magento/FunctionalTestingFramework/Page/etc/PageObject.xsd">
-    <page name="StorefrontCheckoutSuccessPage" url="iwd_checkout/index/success" area="storefront" module="Magento_CheckoutConnector">
+    <page name="StorefrontCheckoutSuccessPage" url="checkout_page/index/success" area="storefront" module="Magento_CheckoutConnector">
         <section name="StorefrontCheckoutSuccessContentSection"/>
     </page>
 </pages>

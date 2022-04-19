@@ -170,7 +170,7 @@ class Frame extends CheckoutOnepage
             'editCartUrl'      => $this->getUrl('checkout/cart'),
             'loginUrl'         => $this->getUrl('customer/ajax/login/'),
             'resetPasswordUrl' => $this->getUrl('customer/account/forgotpassword/'),
-            'successActionUrl' => $this->getUrl('iwd_checkout/index/success')
+            'successActionUrl' => $this->getUrl('checkout_page/index/success')
         ];
     }
 }

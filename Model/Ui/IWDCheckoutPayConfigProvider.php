@@ -198,4 +198,12 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
     {
         return $this->getQuote()->getBaseCurrencyCode();
     }
+
+    public function getTittle(){
+        return $this->getConfigData('title');
+    }
+
+    public function getOrderStatus(){
+        return $this->getConfigData('order_status');
+    }
 }

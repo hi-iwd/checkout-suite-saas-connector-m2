@@ -1,12 +1,9 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
+
 namespace IWD\CheckoutConnector\Model\OfflinePayment;
 
 /**
- * Class Checkmo
+ * Class Custom
  *
  * @method \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
  *

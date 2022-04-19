@@ -6,7 +6,6 @@
     <body>
         <referenceBlock name="page.main.title" remove="true"/>
         <referenceContainer name="content">
-            <block class="Magento\Framework\View\Element\Template" name="checkout.top.link" template="IWD_CheckoutConnector::link.phtml" after="-"/>
             <block name="iwd.braintree.apple.pay" ifconfig="iwd_checkout_connector/general/enable"
                    template="IWD_CheckoutConnector::braintree/braintree_apple_pay.phtml" after="-">
                 <arguments>

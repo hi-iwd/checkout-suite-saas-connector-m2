@@ -178,7 +178,7 @@ class Opc implements OpcInterface
 
         $quote->save();
 
-        $response['available_countries'] = $this->country->getCountry();
+        $response['available_countries'] = $this->country->getCountry($quote);
         $response['available_regions']   = $this->regions->getRegions();
         $response['addresses']           = $this->address->formatAddress($quote);
         $response['cart_items']          = $this->cartItems->getItems($quote);
