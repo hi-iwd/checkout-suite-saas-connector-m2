@@ -2,7 +2,6 @@
 
 namespace IWD\CheckoutConnector\Observer;
 
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use IWD\CheckoutConnector\Model\Order\ChangeOrderStatus as OrderStatus;
@@ -18,23 +17,25 @@ class ChangeOrderStatus implements ObserverInterface
      */
     private $orderStatus;
 
-    /**
-     * @var IWDCheckoutPayConfigProvider
-     */
-    private $IWDCheckoutPayConfigProvider;
+    private $iwdPaymentMethods = [
+        'iwd_checkout_pay',
+        'iwd_checkout_offline_pay_checkmo',
+        'iwd_checkout_offline_pay_zero',
+        'iwd_checkout_offline_pay_cashondelivery',
+        'iwd_checkout_offline_pay_banktransfer',
+        'iwd_checkout_offline_pay_purchaseorder',
+        'iwd_checkout_offline_pay_custom',
+        'iwd_checkout_multiple_payment',
+    ];
 
     /**
      * ChangeOrderStatus constructor.
-     *
      * @param OrderStatus $orderStatus
-     * @param IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider
      */
     public function __construct(
-        OrderStatus $orderStatus,
-        IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider
+        OrderStatus $orderStatus
     ) {
         $this->orderStatus = $orderStatus;
-        $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
     }
 
     /**
@@ -46,7 +47,7 @@ class ChangeOrderStatus implements ObserverInterface
         $payment_method_code = $order->getPayment()->getMethodInstance()->getCode();
         $shipping_method_code = $order->getShippingMethod();
         if (
-            $payment_method_code == $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode()
+            in_array($payment_method_code,$this->iwdPaymentMethods)
             && $shipping_method_code != \IWD\CheckoutConnector\Model\Carrier\Subscription::CODE
         ) {
             $this->orderStatus->changeStatus($order);

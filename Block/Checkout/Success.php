@@ -1,13 +1,14 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
+
 namespace IWD\CheckoutConnector\Block\Checkout;
 
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\App\Request\Http;
 use Magento\Checkout\Model\Session;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\OrderRepository;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayZeroConfigProvider;
@@ -15,8 +16,14 @@ use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvi
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCustomConfigProvider;
+use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflineMultiple;
 
-class Success extends \Magento\Framework\View\Element\Template
+/**
+ * Class Success
+ *
+ * @package IWD\CheckoutConnector\Block\Checkout
+ */
+class Success extends Template
 {
     private $request;
     private $checkoutSession;
@@ -27,7 +34,24 @@ class Success extends \Magento\Framework\View\Element\Template
     private $bankTransferConfigProvider;
     private $cashOnDeliveryConfigProvider;
     private $customConfigProvider;
+    private $multipleConfigProvider;
 
+    /**
+     * Constructor
+     *
+     * @param Template\Context $context
+     * @param Http $request
+     * @param Session $checkoutSession
+     * @param OrderRepository $orderRepository
+     * @param IWDCheckoutOfflinePayCheckmoConfigProvider $checkMoConfigProvider
+     * @param IWDCheckoutOfflinePayZeroConfigProvider $zeroConfigProvider
+     * @param IWDCheckoutOfflinePayPurchaseOrderConfigProvider $purchaseOrderConfigProvider
+     * @param IWDCheckoutOfflinePayBankTransferConfigProvider $bankTransferConfigProvider
+     * @param IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $cashOnDeliveryConfigProvider
+     * @param IWDCheckoutOfflinePayCustomConfigProvider $customConfigProvider
+     * @param IWDCheckoutOfflineMultiple $multipleConfigProvider
+     * @param array $data
+     */
     public function __construct(
         Context $context,
         Http $request,
@@ -39,9 +63,11 @@ class Success extends \Magento\Framework\View\Element\Template
         IWDCheckoutOfflinePayBankTransferConfigProvider $bankTransferConfigProvider,
         IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $cashOnDeliveryConfigProvider,
         IWDCheckoutOfflinePayCustomConfigProvider $customConfigProvider,
+        IWDCheckoutOfflineMultiple $multipleConfigProvider,
         array $data = []
     ) {
         parent::__construct($context, $data);
+
         $this->request = $request;
         $this->checkoutSession = $checkoutSession;
         $this->orderRepository = $orderRepository;
@@ -51,34 +77,60 @@ class Success extends \Magento\Framework\View\Element\Template
         $this->bankTransferConfigProvider = $bankTransferConfigProvider;
         $this->cashOnDeliveryConfigProvider = $cashOnDeliveryConfigProvider;
         $this->customConfigProvider = $customConfigProvider;
+        $this->multipleConfigProvider = $multipleConfigProvider;
     }
 
-    public function getObj(){
+    /**
+     * @return array
+     */
+    public function getObj()
+    {
         return $this->request->getParams();
     }
 
-    public function getPaymentMethodeDetails(){
+    /**
+     * @return array|string[]
+     * @throws InputException
+     * @throws NoSuchEntityException
+     */
+    public function getPaymentMethodDetails()
+    {
         $orderId = $this->checkoutSession->getLastOrderId();
         $order = $this->loadOrderById($orderId);
         $payment = $order->getPayment();
-        $method = $payment->getMethodInstance();
-        $paymentMethodDetails = $this->getPaymentMethodeDetailsByCode($method->getCode());
+        $paymentCode = $payment->getMethodInstance()->getCode();
+        $paymentMethodDetails = $this->getPaymentMethodDetailsByCode($paymentCode, $payment);
 
-        if($method->getCode() == 'iwd_checkout_offline_pay_purchaseorder'){
-            if($payment->getPoNumber() && !empty($payment->getPoNumber())){
-                $paymentMethodDetails['po_number'] = $payment->getPoNumber();
+        if($paymentCode === 'iwd_checkout_offline_pay_purchaseorder' || $paymentCode === 'iwd_checkout_multiple_payment') {
+            if($payment->getPoNumber() && !empty($payment->getPoNumber())) {
+                $key = $paymentCode === 'iwd_checkout_multiple_payment'
+                    ? $this->multipleConfigProvider->getConfigData('field_name') : 'po_number';
+
+                $paymentMethodDetails[$key] = $payment->getPoNumber();
             }
         }
 
         return $paymentMethodDetails;
     }
 
-
-    public function loadOrderById($id){
+    /**
+     * @param $id
+     * @return OrderInterface
+     * @throws InputException
+     * @throws NoSuchEntityException
+     */
+    public function loadOrderById($id)
+    {
         return $this->orderRepository->get($id);
     }
 
-    public function getPaymentMethodeDetailsByCode($code){
+    /**
+     * @param $code
+     * @param $payment
+     * @return array|string[]
+     */
+    public function getPaymentMethodDetailsByCode($code, $payment)
+    {
         switch ($code){
             case 'iwd_checkout_offline_pay_checkmo':
                 $configProvider = $this->checkMoConfigProvider;
@@ -98,26 +150,20 @@ class Success extends \Magento\Framework\View\Element\Template
             case 'iwd_checkout_offline_pay_custom':
                 $configProvider = $this->customConfigProvider;
                 break;
-
+            case 'iwd_checkout_multiple_payment':
+                $configProvider = $this->multipleConfigProvider;
+                $configProvider->setCode($payment->getAdditionalInformation('iwd_method_code'));
+                break;
+            default:
+                return [];
         }
 
-        if(!isset($configProvider)){
-            return [];
-        }
-
-        $paymentDetails = [
+        return [
             'title' => $configProvider->getConfigData('title') ?? '',
             'payable_to' => $configProvider->getConfigData('payable_to') ?? '',
             'mailing_address' => $configProvider->getConfigData('mailing_address') ?? '',
             'instruction' => $configProvider->getConfigData('instruction') ?? '',
             'extra_details' => $configProvider->getConfigData('extra_details') ?? '',
         ];
-        foreach ($paymentDetails as $key => $detail){
-            if(empty($detail)){
-                unset($paymentDetails[$key]);
-            }
-        }
-        return $paymentDetails;
     }
-
 }

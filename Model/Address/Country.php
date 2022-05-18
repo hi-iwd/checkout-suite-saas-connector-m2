@@ -2,7 +2,7 @@
 
 namespace IWD\CheckoutConnector\Model\Address;
 
-use Magento\Directory\Model\ResourceModel\Country\Collection;
+use Magento\Directory\Model\ResourceModel\Country\CollectionFactory;
 use Magento\Directory\Model\TopDestinationCountries;
 use Magento\Framework\App\ObjectManager;
 
@@ -25,11 +25,11 @@ class Country
 
     /**
      * Country constructor.
-     * @param Collection $countryCollection
+     * @param CollectionFactory $countryCollection
      * @param TopDestinationCountries|null $topDestinationCountries
      */
     public function __construct(
-        Collection $countryCollection,
+        CollectionFactory $countryCollection,
         TopDestinationCountries $topDestinationCountries = null
     ) {
         $this->countryCollection = $countryCollection;
@@ -44,11 +44,23 @@ class Country
      */
     public function getCountry($quote)
     {
-        $data = $this->countryCollection->loadByStore($quote->getStoreId())
+        $data = $this->countryCollection->create()->loadByStore($quote->getStoreId())
             ->setForegroundCountries($this->topDestinationCountries->getTopDestinations())
             ->toOptionArray();
 
-        if(count($data) > 1){
+        return $this->filterCountryResult($data);
+    }
+
+    public function getAllCountry()
+    {
+        $data = $this->countryCollection->create()->toOptionArray();
+
+        return $this->filterCountryResult($data);
+
+    }
+
+    private function filterCountryResult($data) {
+        if (count($data) > 1) {
             array_shift($data);
         }
 

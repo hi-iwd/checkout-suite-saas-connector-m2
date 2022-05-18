@@ -111,7 +111,8 @@ class Frame extends CheckoutOnepage
         $params = [
             'api_key' => $integrationApiKey,
             'quote_id' => $quoteId,
-            'customer_token' => $this->getCustomerToken()
+            'customer_token' => $this->getCustomerToken(),
+            'customer_group' => $this->getCustomerGroup()
         ];
 
         if(isset($requestParams['paypal_order_id']) && $requestParams['paypal_order_id']) {
@@ -173,4 +174,17 @@ class Frame extends CheckoutOnepage
             'successActionUrl' => $this->getUrl('checkout_page/index/success')
         ];
     }
+
+    /**
+     * @return mixed
+     */
+    public function getCustomerGroup()
+    {
+        if($this->customerSession->isLoggedIn()) {
+            return $this->customerSession->getCustomer()->getGroupId();
+        }
+
+        return '0';
+    }
+
 }

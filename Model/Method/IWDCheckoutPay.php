@@ -127,4 +127,12 @@ class IWDCheckoutPay extends Adapter
 
         return parent::getConfigData($field, $storeId);
     }
+
+    /**
+     * @return bool
+     */
+    public function canRefundPartialPerInvoice()
+    {
+        return true;
+    }
 }

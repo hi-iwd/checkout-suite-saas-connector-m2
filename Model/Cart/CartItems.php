@@ -124,7 +124,7 @@ class CartItems
             foreach ($options['bundle_options'] as $option) {
                 $value = '';
                 foreach ($option['value'] as $item) {
-                    $value .= '(' . $item['qty'] . ') ' . $item['title'] . ' ' . $this->currency->format($item['price'], false, false);
+                    $value .= '(' . $item['qty'] . ') ' . $item['title'] . ' ' . $this->currency->format($item['price'], [], false);
                 }
 
                 $product_options[] = [

@@ -100,7 +100,8 @@ class Addresses
                 'region_id'  => $savedAddress[$key]['region_id'] ?? $item['region_id'],
                 'city'       => $savedAddress[$key]['city'] ?? $item['city'],
                 'postcode'   => $savedAddress[$key]['postcode'] ?? $item['postcode'],
-                'telephone'  => $savedAddress[$key]['telephone'] ?? $item['telephone']
+                'telephone'  => $savedAddress[$key]['telephone'] ?? $item['telephone'],
+                'company'    => $savedAddress[$key]['company'] ?? $item['company']
             ];
         }
 

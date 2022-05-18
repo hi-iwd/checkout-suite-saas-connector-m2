@@ -58,6 +58,11 @@ class PayPalCheckout implements PayPalCheckoutInterface
     protected $storeManager;
 
     /**
+     * @var CustomDataProvider
+     */
+    private $customDataProvider;
+
+    /**
      * DeliveryStep constructor.
      *
      * @param CartItems $cartItems
@@ -68,6 +73,7 @@ class PayPalCheckout implements PayPalCheckoutInterface
      * @param AccessValidator $accessValidator
      * @param Quote $quote
      * @param StoreManagerInterface $storeManager
+     * @param CustomDataProvider $customDataProvider
      */
     public function __construct(
         CartItems $cartItems,
@@ -77,7 +83,8 @@ class PayPalCheckout implements PayPalCheckoutInterface
         FormatData $formatData,
         AccessValidator $accessValidator,
         Quote $quote,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        CustomDataProvider $customDataProvider
     ) {
         $this->cartItems = $cartItems;
         $this->cartTotals = $cartTotals;
@@ -87,6 +94,7 @@ class PayPalCheckout implements PayPalCheckoutInterface
         $this->accessValidator = $accessValidator;
         $this->quote = $quote;
         $this->storeManager = $storeManager;
+        $this->customDataProvider = $customDataProvider;
     }
 
     /**
@@ -160,9 +168,10 @@ class PayPalCheckout implements PayPalCheckoutInterface
 
         $quote->save();
 
-        $response['addresses']  = $this->address->formatAddress($quote);
-        $response['cart_items'] = $this->cartItems->getItems($quote);
-        $response['cart']       = $this->cartTotals->getTotals($quote);
+        $response['addresses']   = $this->address->formatAddress($quote);
+        $response['cart_items']  = $this->cartItems->getItems($quote);
+        $response['cart']        = $this->cartTotals->getTotals($quote);
+        $response['custom_data'] = $this->customDataProvider->getData($quote);
 
         return $response;
     }

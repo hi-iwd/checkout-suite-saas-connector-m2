@@ -22,4 +22,11 @@ interface OfflinePaymentMethodInterface
      * @return mixed[]|string
      */
     public function getOrderStatus($access_tokens);
+
+    /**
+     * @api
+     * @param mixed $access_tokens
+     * @return mixed[]|string
+     */
+    public function getGroups($access_tokens);
 }

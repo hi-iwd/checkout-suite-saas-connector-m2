@@ -2,7 +2,7 @@
 
 namespace IWD\CheckoutConnector\Model\Address;
 
-use Magento\Directory\Model\ResourceModel\Region\Collection;
+use Magento\Directory\Model\ResourceModel\Region\CollectionFactory;
 
 /**
  * Class Regions
@@ -12,17 +12,17 @@ use Magento\Directory\Model\ResourceModel\Region\Collection;
 class Regions
 {
     /**
-     * @var Collection
+     * @var CollectionFactory
      */
     protected $regionCollection;
 
     /**
      * Regions constructor.
      *
-     * @param Collection $regionCollection
+     * @param CollectionFactory $regionCollection
      */
     public function __construct(
-        Collection $regionCollection
+        CollectionFactory $regionCollection
     ) {
         $this->regionCollection = $regionCollection;
     }
@@ -32,6 +32,11 @@ class Regions
      */
     public function getRegions()
     {
-        return $this->regionCollection->addAllowedCountriesFilter()->toOptionArray();
+        return $this->regionCollection->create()->addAllowedCountriesFilter()->toOptionArray();
+    }
+
+    public function getAllRegions()
+    {
+        return $this->regionCollection->create()->toOptionArray();
     }
 }

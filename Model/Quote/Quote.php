@@ -4,6 +4,7 @@ namespace IWD\CheckoutConnector\Model\Quote;
 
 use Exception;
 use Magento\Quote\Model\QuoteRepository;
+use IWD\CheckoutConnector\Plugin\QuoteRepository\AccessChangeQuoteControl;
 
 /**
  * Class Quote
@@ -17,14 +18,22 @@ class Quote
     private $quoteRepository;
 
     /**
+     * @var AccessChangeQuoteControl
+     */
+    private $accessChangeQuoteControl;
+
+    /**
      * Quote constructor.
      *
      * @param QuoteRepository $quoteRepository
+     * @param AccessChangeQuoteControl $accessChangeQuoteControl
      */
     public function __construct(
-        QuoteRepository $quoteRepository
+        QuoteRepository $quoteRepository,
+        AccessChangeQuoteControl $accessChangeQuoteControl
     ) {
         $this->quoteRepository = $quoteRepository;
+        $this->accessChangeQuoteControl = $accessChangeQuoteControl;
     }
 
     /**
@@ -39,6 +48,9 @@ class Quote
         if (!$quote->getId()) {
             throw new Exception('Quote ID is invalid.');
         }
+
+        // Fix possible "Invalid State Change Requested" issue.
+        $this->accessChangeQuoteControl->setForceAllowed(true);
 
         return $quote;
     }

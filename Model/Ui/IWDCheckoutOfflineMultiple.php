@@ -83,13 +83,11 @@ class IWDCheckoutOfflineMultiple implements ConfigProviderInterface
     }
 
     public function getTittle($code){
-
         $this->code = $code;
         return $this->getConfigData('title');
     }
 
     public function getOrderStatus($code){
-
         $this->code = $code;
         return $this->getConfigData('order_status');
     }

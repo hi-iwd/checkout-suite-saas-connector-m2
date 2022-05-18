@@ -90,4 +90,10 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
+    <route url="/V1/iwd-checkout/get-customers-groups" method="POST">
+        <service class="IWD\CheckoutConnector\Api\OfflinePaymentMethodInterface" method="getGroups"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
 </routes>

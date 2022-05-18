@@ -1,0 +1,36 @@
+<?php
+/**
+ * @var $block \IWD\CheckoutConnector\Block\Checkout\CustomAddressData
+ */
+
+/**
+ * Input Field Name determines the place where Custom Data will be saved during the order creation
+ *
+ * custom_data - * required name param to determine that the field needs to be saved during the order creation
+ *
+ * quote/order - * required name param to determine where the field will be saved.
+ * More Details: IWD\CheckoutConnector\Model\CustomDataProvider
+ *               line 100 saveDataToQuote()
+ *               line 127 saveDataToOrder()
+ *
+ * shipping_address/billing_address/customer - if previous name parameter was specified as 'quote', you can select
+ *                                             to what quote object the data needs to be saved.
+ * More Details: IWD\CheckoutConnector\Model\CustomDataProvider
+ *               saveDataToQuote() - line 103, 107, 111
+ *
+ * company/any_other_name - * required name param which determines the data which will be saved to the quote/order
+ */
+
+$companyFieldName = 'custom_data[quote]['.$block->getAddressType().'][company]';
+$companyFieldVal = $block->getAddress()->getCompany();
+?>
+
+<p class="form-row col-lg-4 col-md-6 col-sm-12 form-group">
+    <span class="iwd-opc-field">
+        <input type="text" class="iwd-opc-input optional"
+               autocomplete="organization"
+               name="<?= $companyFieldName ?>"
+               value="<?= $companyFieldVal ?>">
+        <span class="label <?php if($companyFieldVal): ?>filled<?php endif; ?>">Company</span>
+    </span>
+</p>

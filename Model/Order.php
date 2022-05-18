@@ -8,24 +8,17 @@ use IWD\CheckoutConnector\Api\InvoiceManagementInterface;
 use IWD\CheckoutConnector\Api\OrderInterface;
 use IWD\CheckoutConnector\Api\PaymentRepositoryInterface;
 use IWD\CheckoutConnector\Helper\Order as OrderHelper;
+use IWD\CheckoutConnector\Helper\OfflinePayments as OfflinePaymentsHelper;
 use IWD\CheckoutConnector\Model\Address\Addresses;
 use IWD\CheckoutConnector\Model\Address\ShippingMethods;
 use IWD\CheckoutConnector\Model\Cart\CartItems;
 use IWD\CheckoutConnector\Model\Cart\CartTotals;
 use IWD\CheckoutConnector\Model\Quote\Quote;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCheckmoConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayZeroConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCustomConfigProvider;
-use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflineMultiple;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Quote\Model\QuoteFactory;
 use Magento\Quote\Model\QuoteManagement;
 use Magento\Sales\Api\Data\OrderStatusHistoryInterface;
 use Magento\Sales\Api\OrderStatusHistoryRepositoryInterface;
@@ -43,10 +36,10 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Order implements OrderInterface
 {
-    /**
-     * @var QuoteFactory
-     */
-    private $quoteFactory;
+    protected $orderCreationResult = [
+        'error'        => 1,
+        'order_status' => 'not_created'
+    ];
 
     /**
      * @var QuoteManagement
@@ -97,21 +90,31 @@ class Order implements OrderInterface
      * @var OrderHelper
      */
     private $orderHelper;
+
+    /**
+     * @var OfflinePaymentsHelper
+     */
+    private $offlinePaymentsHelper;
+
     /**
      * @var InvoiceManagementInterface
      */
     private $invoiceManagement;
+
     /**
      * @var OrderStatusHistoryRepositoryInterface
      */
     private $orderStatusHistoryRepository;
+
     /**
      * @var SortOrderBuilder
      */
     private $sortOrderBuilder;
+
     /**
      * @var SearchCriteriaBuilder
      */
+
     private $searchCriteriaBuilder;
     /**
      * @var OrderRepositoryInterface
@@ -134,41 +137,6 @@ class Order implements OrderInterface
     private $IWDCheckoutPayConfigProvider;
 
     /**
-     * @var IWDCheckoutOfflinePayCashOnDeliveryConfigProvider
-     */
-    private $cash_on_delivery;
-
-    /**
-     * @var IWDCheckoutOfflinePayCheckmoConfigProvider
-     */
-    private $check_or_money_order;
-
-    /**
-     * @var IWDCheckoutOfflinePayZeroConfigProvider
-     */
-    private $zero;
-
-    /**
-     * @var IWDCheckoutOfflinePayBankTransferConfigProvider
-     */
-    private $banktransfer;
-
-    /**
-     * @var IWDCheckoutOfflinePayPurchaseOrderConfigProvider
-     */
-    private $purchaseorder;
-
-    /**
-     * @var IWDCheckoutOfflinePayCustomConfigProvider
-     */
-    private $custom;
-
-    /**
-     * @var IWDCheckoutOfflineMultiple
-     */
-    private $multiple_offline;
-
-    /**
      * @var Quote
      */
     private $quote;
@@ -179,9 +147,13 @@ class Order implements OrderInterface
     protected $storeManager;
 
     /**
+     * @var CustomDataProvider
+     */
+    private $customDataProvider;
+
+    /**
      * Order constructor.
      *
-     * @param QuoteFactory $quoteFactory
      * @param QuoteManagement $quoteManagement
      * @param OrderFactory $orderFactory
      * @param AccessValidator $accessValidator
@@ -191,6 +163,7 @@ class Order implements OrderInterface
      * @param CartItems $cartItems
      * @param CartTotals $cartTotals
      * @param OrderHelper $orderHelper
+     * @param OfflinePaymentsHelper $offlinePaymentsHelper
      * @param InvoiceManagementInterface $invoiceManagement
      * @param OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository
      * @param SortOrderBuilder $sortOrderBuilder
@@ -198,9 +171,12 @@ class Order implements OrderInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentRepositoryInterface $paymentRepositoryInterface
      * @param PaymentInterfaceFactory $paymentInterface
+     * @param IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider
+     * @param Quote $quote
+     * @param StoreManagerInterface $storeManager
+     * @param CustomDataProvider $customDataProvider
      */
     public function __construct(
-        QuoteFactory $quoteFactory,
         QuoteManagement $quoteManagement,
         OrderFactory $orderFactory,
         AccessValidator $accessValidator,
@@ -210,6 +186,7 @@ class Order implements OrderInterface
         CartItems $cartItems,
         CartTotals $cartTotals,
         OrderHelper $orderHelper,
+        OfflinePaymentsHelper $offlinePaymentsHelper,
         InvoiceManagementInterface $invoiceManagement,
         OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
         SortOrderBuilder $sortOrderBuilder,
@@ -218,17 +195,10 @@ class Order implements OrderInterface
         PaymentRepositoryInterface $paymentRepositoryInterface,
         PaymentInterfaceFactory $paymentInterface,
         IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
-        IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider,
-        IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider,
-        IWDCheckoutOfflinePayZeroConfigProvider $IWDCheckoutOfflinePayZeroConfigProvider,
-        IWDCheckoutOfflinePayBankTransferConfigProvider $IWDCheckoutOfflinePayBankTransferConfigProvider,
-        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
-        IWDCheckoutOfflinePayCustomConfigProvider $IWDCheckoutOfflinePayCustomConfigProvider,
-        IWDCheckoutOfflineMultiple $iwdCheckoutPay,
         Quote $quote,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        CustomDataProvider $customDataProvider
     ) {
-        $this->quoteFactory = $quoteFactory;
         $this->quoteManagement = $quoteManagement;
         $this->orderFactory = $orderFactory;
         $this->accessValidator = $accessValidator;
@@ -238,6 +208,7 @@ class Order implements OrderInterface
         $this->cartItems = $cartItems;
         $this->cartTotals = $cartTotals;
         $this->orderHelper = $orderHelper;
+        $this->offlinePaymentsHelper = $offlinePaymentsHelper;
         $this->invoiceManagement = $invoiceManagement;
         $this->orderStatusHistoryRepository = $orderStatusHistoryRepository;
         $this->sortOrderBuilder = $sortOrderBuilder;
@@ -246,15 +217,9 @@ class Order implements OrderInterface
         $this->paymentRepositoryInterface = $paymentRepositoryInterface;
         $this->paymentInterface = $paymentInterface;
         $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
-        $this->cash_on_delivery = $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
-        $this->check_or_money_order = $IWDCheckoutOfflinePayCheckmoConfigProvider;
-        $this->zero = $IWDCheckoutOfflinePayZeroConfigProvider;
-        $this->banktransfer = $IWDCheckoutOfflinePayBankTransferConfigProvider;
-        $this->purchaseorder = $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
-        $this->custom = $IWDCheckoutOfflinePayCustomConfigProvider;
-        $this->multiple_offline = $iwdCheckoutPay;
         $this->quote = $quote;
         $this->storeManager = $storeManager;
+        $this->customDataProvider = $customDataProvider;
     }
 
     /**
@@ -266,105 +231,18 @@ class Order implements OrderInterface
      * @throws NoSuchEntityException
      * @throws Exception
      */
-    public function create($quote_id, $access_tokens, $data)
-    {
+    public function create($quote_id, $access_tokens, $data) {
         if (!$this->accessValidator->checkAccess($access_tokens)) {
             return 'Permissions Denied!';
         }
 
-        $quote = $this->quote->getQuote($quote_id);
+        $paymentCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
+        $paymentTitle = $data['payment_method_title'];
 
-        // Set currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
-        $this->storeManager->getStore($quote->getStoreId())
-            ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
+        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
+        $this->processOrderCreation($quote, $data, $paymentTitle);
 
-        $this->orderHelper->ignoreAddressValidation($quote);
-
-        if (!$quote->getCustomer()->getId()) {
-            $this->orderHelper->assignGuestCustomerToQuote($quote);
-        }
-
-        //assign customer email to quote if it is missing
-        if(!$quote->getCustomer()->getEmail()){
-            $quote->getCustomer()->setEmail($quote->getBillingAddress()->getEmail());
-        }
-
-        //set customer email if needed
-        if(!$quote->getCustomerEmail()){
-            $quote->setCustomerEmail($quote->getCustomer()->getEmail());
-        }
-
-        // Dominate Checkout Pay Collection
-        $paymentMethodCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
-        $payment = $this->paymentInterface->create();
-        $payment->setPaymentMethod($data['payment_method_title']);
-
-        // Set Payment Method
-        $quote->setPaymentMethod($paymentMethodCode);
-        $quote->save();
-
-        // Set Sales Order Payment
-        $quote->getPayment()->importData(['method' => $paymentMethodCode]);
-
-        //Set Real Payment Method Title
-        $quote->getPayment()->setAdditionalInformation(array('iwd_method_title' => $data['payment_method_title']));
-
-        // Collect Totals & Save Quote
-        $quote->collectTotals()->save();
-
-        // Create Order From Quote
-        $order = $this->quoteManagement->submit($quote);
-
-        if ($order->getEntityId()) {
-            $this->orderHelper->assignCustomerToOrder($order);
-
-            //Save payment information
-            $payment->setOrderId($order->getId());
-            $this->paymentRepositoryInterface->save($payment);
-
-            // Add Comments To Order
-            if(isset($data['comments']) && $data['comments']) {
-                foreach($data['comments'] as $commentType => $commentVal) {
-                    $order->addStatusHistoryComment(__($commentVal));
-                }
-            }
-
-            // Set Transactions for order
-            $paymentAction = $data['payment_action'];
-            $transactions = $data['transactions'];
-
-            $order->getPayment()->setIsTransactionClosed(0);
-            $order->getPayment()->setAdditionalInformation(array('iwd_method_title' => $data['payment_method_title']));
-
-            if ($paymentAction == 'authorize') {
-                $this->orderHelper->addTransactionToOrder($order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized');
-            } elseif ($paymentAction == 'auth_and_capture' || $paymentAction == 'capture') {
-                if ($paymentAction == 'auth_and_capture') {
-                    $this->orderHelper->addTransactionToOrder($order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized');
-                }
-                $this->orderHelper->addTransactionToOrder($order, $transactions['capture'], Transaction::TYPE_CAPTURE, 'captured');
-                $this->invoiceManagement->addInvoiceToOrder($order, $transactions['capture']['id']);
-            }
-
-            if (!$order->getEmailSent()) {
-                // Send order confirmation email to customer.
-                $this->orderSender->send($order);
-            }
-
-            $result = [
-                'order_id' => $order->getId(),
-                'order_increment_id' => $order->getIncrementId(),
-                'order_status' => $order->getStatus(),
-                'quote_id' => $quote->getId(),
-            ];
-        } else {
-            $result = [
-                'error' => 1,
-                'order_status' => 'not_created'
-            ];
-        }
-
-        return $result;
+        return $this->orderCreationResult;
     }
 
     /**
@@ -376,70 +254,101 @@ class Order implements OrderInterface
      * @throws NoSuchEntityException
      * @throws Exception
      */
-    public function offlineOrderCreate($quote_id, $access_tokens, $data)
-    {
+    public function offlineOrderCreate($quote_id, $access_tokens, $data) {
         if (!$this->accessValidator->checkAccess($access_tokens)) {
             return 'Permissions Denied!';
         }
 
+        $offlineConfigProvider = $this->offlinePaymentsHelper->getConfigProvider($data['payment_method_code']);
+        $paymentCode = $offlineConfigProvider->getPaymentMethodCode();
+        $paymentTitle = $offlineConfigProvider->getTittle($data['payment_method_code']);
+        $orderStatus = $offlineConfigProvider->getOrderStatus($data['payment_method_code']);
+
+        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
+        $this->processOrderCreation($quote, $data, $paymentTitle, $orderStatus);
+
+        return $this->orderCreationResult;
+    }
+
+    /**
+     * @param $quote_id
+     * @param $data
+     * @param $paymentCode
+     * @param $paymentTitle
+     * @return \Magento\Quote\Model\Quote
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    protected function prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle) {
         $quote = $this->quote->getQuote($quote_id);
 
-        // Set currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
+        // Set Currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
         $this->storeManager->getStore($quote->getStoreId())
             ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
 
         $this->orderHelper->ignoreAddressValidation($quote);
 
+        // Assign Guest Customer to Quote
         if (!$quote->getCustomer()->getId()) {
             $this->orderHelper->assignGuestCustomerToQuote($quote);
         }
 
-        //assign customer email to quote if it is missing
+        // Assign Customer Email to Quote if it is missing
         if(!$quote->getCustomer()->getEmail()){
             $quote->getCustomer()->setEmail($quote->getBillingAddress()->getEmail());
         }
 
-        //set customer email if needed
+        // Set Customer Email if needed
         if(!$quote->getCustomerEmail()){
             $quote->setCustomerEmail($quote->getCustomer()->getEmail());
         }
 
-        // Dominate Checkout Pay Collection
-        $paymentMethodCode = $this->{$this->parseMethodCode($data['payment_method_code'])}->getPaymentMethodCode();
-        $paymentTitle = $this->{$this->parseMethodCode($data['payment_method_code'])}->getTittle($data['payment_method_code']);
-        $order_status = $this->{$this->parseMethodCode($data['payment_method_code'])}->getOrderStatus($data['payment_method_code']);
-
-        $payment = $this->paymentInterface->create();
-        $payment->setPaymentMethod($paymentTitle);
-
         // Set Payment Method
-        $quote->setPaymentMethod($paymentMethodCode);
+        $quote->setPaymentMethod($paymentCode);
         $quote->save();
 
-        // Set Sales Order Payment
-        $quote->getPayment()->importData(['method' => $paymentMethodCode]);
+        // Set Sales Order Payment Info
+        $quote->getPayment()->importData(['method' => $paymentCode]);
+        $quote->getPayment()->setAdditionalInformation([
+            'iwd_method_code'  => isset($data['payment_method_code']) ? $data['payment_method_code'] : $paymentCode,
+            'iwd_method_title' => $paymentTitle
+        ]);
 
-        //Set Real Payment Method Title
-        $quote->getPayment()->setAdditionalInformation(array('iwd_method_code' => $data['payment_method_code']));
-
-        if($data['payment_method_code'] == 'purchaseorder' && isset($data['po_number']) && !empty($data['po_number'])){
-            $quote->getPayment()->setPoNumber($data['po_number']);
+        // Set PO Number
+        if($poNumber = $this->offlinePaymentsHelper->getPoNumber($paymentCode, $data)) {
+            $quote->getPayment()->setPoNumber($poNumber);
         }
 
-        if($this->parseMethodCode($data['payment_method_code']) == 'multiple_offline' && isset($data['multiple_field']) && !empty($data['multiple_field'])){
-            $quote->getPayment()->setPoNumber($data['multiple_field']);
+        // Save Custom Data to Quote
+        if(isset($data['custom_data']['quote']) && $data['custom_data']['quote']) {
+            $this->customDataProvider->saveDataToQuote($quote, $data['custom_data']['quote']);
         }
 
         // Collect Totals & Save Quote
         $quote->collectTotals()->save();
 
+        return $quote;
+    }
+
+    /**
+     * @param $quote
+     * @param $data
+     * @param $paymentTitle
+     * @param $paymentCode
+     * @param null $orderStatus
+     * @throws LocalizedException
+     */
+    protected function processOrderCreation($quote, $data, $paymentTitle, $orderStatus = null) {
         // Create Order From Quote
         $order = $this->quoteManagement->submit($quote);
 
         if ($order->getEntityId()) {
+            // Assign Customer
             $this->orderHelper->assignCustomerToOrder($order);
 
-            //Save payment information
+            //Save Payment Information
+            $payment = $this->paymentInterface->create();
+            $payment->setPaymentMethod($paymentTitle);
             $payment->setOrderId($order->getId());
             $this->paymentRepositoryInterface->save($payment);
 
@@ -450,33 +359,53 @@ class Order implements OrderInterface
                 }
             }
 
-            // Set Transactions for order
             $order->getPayment()->setIsTransactionClosed(0);
-            //$order->getPayment()->setAdditionalInformation(array('iwd_method_title' => $data['payment_method_title']));
 
+            // Set Transactions for Order
+            if(isset($data['payment_action']) && $data['payment_action'] && isset($data['transactions']) && $data['transactions']) {
+                $paymentAction = $data['payment_action'];
+                $transactions = $data['transactions'];
+
+                if ($paymentAction == 'authorize') {
+                    $this->orderHelper->addTransactionToOrder(
+                        $order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized'
+                    );
+                } elseif ($paymentAction == 'auth_and_capture' || $paymentAction == 'capture') {
+                    if ($paymentAction == 'auth_and_capture') {
+                        $this->orderHelper->addTransactionToOrder(
+                            $order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized'
+                        );
+                    }
+
+                    $this->orderHelper->addTransactionToOrder(
+                        $order, $transactions['capture'], Transaction::TYPE_CAPTURE, 'captured'
+                    );
+                    $this->invoiceManagement->addInvoiceToOrder($order, $transactions['capture']['id']);
+                }
+            }
+
+            // Set Order Status
+            if($orderStatus) {
+                $order->setStatus($orderStatus)->save();
+            }
+
+            // Send Order Confirmation Email to Customer.
             if (!$order->getEmailSent()) {
-                // Send order confirmation email to customer.
                 $this->orderSender->send($order);
             }
 
-            $order->setStatus($order_status)->save();
+            // Save Custom Data to Order
+            if(isset($data['custom_data']['order']) && $data['custom_data']['order']) {
+                $this->customDataProvider->saveDataToOrder($order, $data['custom_data']['order']);
+            }
 
-
-            $result = [
-                'order_id' => $order->getId(),
+            $this->orderCreationResult = [
+                'order_id'           => $order->getId(),
                 'order_increment_id' => $order->getIncrementId(),
-                'order_status' => $order->getStatus(),
-                'quote_id' => $quote->getId(),
-            ];
-
-        } else {
-            $result = [
-                'error' => 1,
-                'order_status' => 'not_created'
+                'order_status'       => $order->getStatus(),
+                'quote_id'           => $quote->getId(),
             ];
         }
-
-        return $result;
     }
 
     /**
@@ -593,17 +522,5 @@ class Order implements OrderInterface
                 $this->orderStatusHistoryRepository->delete($comment);
             } catch (Exception $e) {}
         }
-    }
-
-    /**
-     * @param $code
-     * @return string
-     */
-    public function parseMethodCode($code){
-        if (strpos($code, 'multiple_offline') !== false) {
-            return 'multiple_offline';
-        }
-
-        return $code;
     }
 }

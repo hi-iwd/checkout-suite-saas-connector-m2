@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Magento\Webapi\Model\Authorization\TokenUserContext" type="IWD\CheckoutConnector\Model\Authorization\UserContext" />
+    <type name="Magento\Quote\Model\QuoteRepository">
+        <plugin name="accessControl" disabled="true"/>
+        <plugin name="iwdCheckoutAccessControl" type="IWD\CheckoutConnector\Plugin\QuoteRepository\AccessChangeQuoteControl" disabled="false"/>
+    </type>
 </config>

@@ -11,7 +11,10 @@ use IWD\CheckoutConnector\Model\Address\ShippingMethods;
 use IWD\CheckoutConnector\Model\Cart\CartItems;
 use IWD\CheckoutConnector\Model\Cart\CartTotals;
 use IWD\CheckoutConnector\Model\Quote\Quote;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Locale\ResolverInterface;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -66,6 +69,21 @@ class Opc implements OpcInterface
     private $quote;
 
     /**
+     * @var ResolverInterface
+     */
+    private $localeResolver;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
+     * @var CustomDataProvider
+     */
+    private $customDataProvider;
+
+    /**
      * AddressStep constructor.
      *
      * @param CartItems $cartItems
@@ -77,6 +95,9 @@ class Opc implements OpcInterface
      * @param Addresses $address
      * @param Quote $quote
      * @param StoreManagerInterface $storeManager
+     * @param ResolverInterface $localeResolver
+     * @param ScopeConfigInterface $scopeConfig
+     * @param CustomDataProvider $customDataProvider
      */
     public function __construct(
         CartItems $cartItems,
@@ -87,7 +108,10 @@ class Opc implements OpcInterface
         ShippingMethods $shippingMethods,
         Addresses $address,
         Quote $quote,
-        StoreManagerInterface $storeManager
+        ResolverInterface $localeResolver,
+        ScopeConfigInterface $scopeConfig,
+        StoreManagerInterface $storeManager,
+        CustomDataProvider $customDataProvider
     ) {
         $this->cartItems = $cartItems;
         $this->cartTotals = $cartTotals;
@@ -98,6 +122,9 @@ class Opc implements OpcInterface
         $this->address = $address;
         $this->quote = $quote;
         $this->storeManager = $storeManager;
+        $this->localeResolver = $localeResolver;
+        $this->scopeConfig = $scopeConfig;
+        $this->customDataProvider = $customDataProvider;
     }
 
     /**
@@ -136,6 +163,9 @@ class Opc implements OpcInterface
         // Set currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
         $this->storeManager->getStore($quote->getStoreId())
             ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
+
+        // Set currently locale (en_US, de_DE, etc.) based in store ID.
+        $this->setStoreLocale($quote->getStoreId());
 
         // Get Customer Saved Addresses if he/she is logged in.
         if($this->address->isLoggedIn($quote)) {
@@ -178,12 +208,36 @@ class Opc implements OpcInterface
 
         $quote->save();
 
-        $response['available_countries'] = $this->country->getCountry($quote);
-        $response['available_regions']   = $this->regions->getRegions();
+        $available_countries = $this->country->getCountry($quote);
+        $all_countries = $this->country->getAllCountry();
+        $available_regions = $this->regions->getRegions();
+        $all_regions = $this->regions->getAllRegions();
+
+        if ($available_countries !== $all_countries) {
+            $response['available_billing_countries'] = $all_countries;
+            $response['available_billing_regions'] = $all_regions;
+        }
+
+        $response['available_countries'] = $available_countries;
+        $response['available_regions']   = $available_regions;
         $response['addresses']           = $this->address->formatAddress($quote);
         $response['cart_items']          = $this->cartItems->getItems($quote);
         $response['cart']                = $this->cartTotals->getTotals($quote);
+        $response['custom_data']         = $this->customDataProvider->getData($quote);
 
         return $response;
+    }
+
+    /**
+     * @param $storeId
+     * @return void
+     */
+    private function setStoreLocale($storeId)
+    {
+        $localeCode = $this->scopeConfig->getValue('general/locale/code', ScopeInterface::SCOPE_STORE, $storeId);
+
+        if ($localeCode) {
+            $this->localeResolver->setLocale($localeCode);
+        }
     }
 }

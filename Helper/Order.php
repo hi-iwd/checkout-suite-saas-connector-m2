@@ -8,7 +8,6 @@ use Magento\Customer\Model\Group;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order as MagentoOrder;
 use Magento\Sales\Model\Order\CreditmemoFactory;
@@ -94,7 +93,6 @@ class Order extends AbstractHelper
 
     /**
      * @param $quote
-     * @throws LocalizedException
      */
     public function assignGuestCustomerToQuote($quote)
     {

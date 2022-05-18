@@ -1,24 +1,30 @@
 <script>
-    require([
-        'Magento_Customer/js/customer-data'
-    ], function (customerData) {
-        customerData.invalidate(['cart']);
+    window.addEventListener('load', function () {
+        require(['Magento_Customer/js/customer-data', 'domReady!'], function (customerData) {
+            var sections = ['cart'];
+            customerData.initStorage();
+            customerData.invalidate(sections);
+            customerData.reload(sections, true);
+        });
     });
 </script>
-<?php if(count($this->getPaymentMethodeDetails()) > 1): ?>
+
+<?php if(count($this->getPaymentMethodDetails()) > 1): ?>
     <div class="checkout-success" style="margin-top: 20px;">
         <h3>Dominate Payment Method Details</h3>
-        <?php foreach ($this->getPaymentMethodeDetails() as $key => $detail):?>
-            <div class="detail">
-                <span class="key">
-                    <strong>
-                        <?php echo str_replace('_',' ',$key); ?>
-                    </strong>
-                </span>
-                <span class="detail">
-                    <?php echo $detail; ?>
-                </span>
-            </div>
+        <?php foreach ($this->getPaymentMethodDetails() as $key => $detail):?>
+            <?php if(!empty($detail)): ?>
+                <div class="detail">
+                    <span class="key">
+                        <strong>
+                            <?php echo str_replace('_',' ',$key); ?>
+                        </strong>
+                    </span>
+                    <span class="detail">
+                        <?php echo $detail; ?>
+                    </span>
+                </div>
+            <?php endif; ?>
         <?php endforeach;?>
     </div>
     <style>
