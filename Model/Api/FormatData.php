@@ -38,7 +38,7 @@ class FormatData
         }
 
         $formatData = [];
-        $email = $data['email'];
+        $email = isset($data['email']) ? $data['email'] : null;
         $shipBillToDiffAddress = $data['ship_bill_to_different_address'];
 
         foreach ($data as $key => $item) {
@@ -52,12 +52,12 @@ class FormatData
                 $formatData[$key] = [
                     "region_id"       => $regionId,
                     "region"          => isset($item["state"]) ? $item["state"] : null,
-                    "country_id"      => $item['country'],
-                    "street"          => $item['address'],
-                    "postcode"        => $item['postcode'],
-                    "city"            => $item['city'],
-                    "firstname"       => $item['first_name'],
-                    "lastname"        => $item['last_name'],
+                    "country_id"      => isset($item['country']) ? $item['country'] : null,
+                    "street"          => isset($item['address']) ? $item['address'] : null,
+                    "postcode"        => isset($item['postcode']) ? $item['postcode'] : null,
+                    "city"            => isset($item['city']) ? $item['city'] : null,
+                    "firstname"       => isset($item['first_name']) ? $item['first_name'] : null,
+                    "lastname"        => isset($item['last_name']) ? $item['last_name'] : null,
                     "telephone"       => isset($item["phone"]) ? $item["phone"] : null,
                     "email"           => $email,
                     "same_as_billing" => $shipBillToDiffAddress ? $shipBillToDiffAddress : 0,

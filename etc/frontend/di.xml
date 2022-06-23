@@ -36,6 +36,12 @@
     <type name="Magento\Checkout\CustomerData\Cart">
         <plugin name="extra_data" type="IWD\CheckoutConnector\Plugin\Checkout\CustomerData\Cart"/>
     </type>
+    <type name="Magento\ReCaptchaCustomer\Observer\AjaxLoginObserver">
+        <plugin name="disableReCaptcha" type="IWD\CheckoutConnector\Plugin\ReCaptchaCustomer\Observer\AjaxLoginObserver"/>
+    </type>
+    <type name="MSP\ReCaptcha\Observer\ReCaptchaObserver">
+        <plugin name="disableReCaptcha" type="IWD\CheckoutConnector\Plugin\MSP\ReCaptcha\Observer\ReCaptchaObserver"/>
+    </type>
 
     <!-- Add Dominate Checkout PayPal Shortcut Buttons -->
     <type name="IWD\CheckoutConnector\Block\Shortcut\PayPalButton">

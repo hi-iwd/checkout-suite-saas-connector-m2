@@ -20,6 +20,7 @@ use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\QuoteManagement;
+use Magento\Quote\Model\QuoteValidator;
 use Magento\Sales\Api\Data\OrderStatusHistoryInterface;
 use Magento\Sales\Api\OrderStatusHistoryRepositoryInterface;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
@@ -28,6 +29,7 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Throwable;
 
 /**
  * Class Order
@@ -152,6 +154,11 @@ class Order implements OrderInterface
     private $customDataProvider;
 
     /**
+     * @var QuoteValidator
+     */
+    protected $quoteValidator;
+
+    /**
      * Order constructor.
      *
      * @param QuoteManagement $quoteManagement
@@ -197,7 +204,8 @@ class Order implements OrderInterface
         IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
         Quote $quote,
         StoreManagerInterface $storeManager,
-        CustomDataProvider $customDataProvider
+        CustomDataProvider $customDataProvider,
+        QuoteValidator $quoteValidator
     ) {
         $this->quoteManagement = $quoteManagement;
         $this->orderFactory = $orderFactory;
@@ -220,6 +228,7 @@ class Order implements OrderInterface
         $this->quote = $quote;
         $this->storeManager = $storeManager;
         $this->customDataProvider = $customDataProvider;
+        $this->quoteValidator = $quoteValidator;
     }
 
     /**
@@ -227,8 +236,6 @@ class Order implements OrderInterface
      * @param mixed $access_tokens
      * @param mixed $data
      * @return mixed[]|string
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      * @throws Exception
      */
     public function create($quote_id, $access_tokens, $data) {
@@ -239,8 +246,13 @@ class Order implements OrderInterface
         $paymentCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
         $paymentTitle = $data['payment_method_title'];
 
-        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
-        $this->processOrderCreation($quote, $data, $paymentTitle);
+        try {
+            $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
+            $this->processOrderCreation($quote, $data, $paymentTitle);
+        } catch (Throwable $e) {
+            $this->orderCreationResult['error'] = 1;
+            $this->orderCreationResult['error_message'] = $e->getMessage();
+        }
 
         return $this->orderCreationResult;
     }
@@ -250,8 +262,6 @@ class Order implements OrderInterface
      * @param mixed $access_tokens
      * @param mixed $data
      * @return mixed[]|string
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      * @throws Exception
      */
     public function offlineOrderCreate($quote_id, $access_tokens, $data) {
@@ -264,8 +274,13 @@ class Order implements OrderInterface
         $paymentTitle = $offlineConfigProvider->getTittle($data['payment_method_code']);
         $orderStatus = $offlineConfigProvider->getOrderStatus($data['payment_method_code']);
 
-        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
-        $this->processOrderCreation($quote, $data, $paymentTitle, $orderStatus);
+        try {
+            $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
+            $this->processOrderCreation($quote, $data, $paymentTitle, $orderStatus);
+        } catch (Throwable $e) {
+            $this->orderCreationResult['error'] = 1;
+            $this->orderCreationResult['error_message'] = $e->getMessage();
+        }
 
         return $this->orderCreationResult;
     }
@@ -305,7 +320,7 @@ class Order implements OrderInterface
 
         // Set Payment Method
         $quote->setPaymentMethod($paymentCode);
-        $quote->save();
+	    $this->quote->saveQuote($quote);
 
         // Set Sales Order Payment Info
         $quote->getPayment()->importData(['method' => $paymentCode]);
@@ -325,7 +340,8 @@ class Order implements OrderInterface
         }
 
         // Collect Totals & Save Quote
-        $quote->collectTotals()->save();
+        $quote->collectTotals();
+	    $this->quote->saveQuote($quote);
 
         return $quote;
     }
@@ -334,7 +350,6 @@ class Order implements OrderInterface
      * @param $quote
      * @param $data
      * @param $paymentTitle
-     * @param $paymentCode
      * @param null $orderStatus
      * @throws LocalizedException
      */
@@ -343,6 +358,14 @@ class Order implements OrderInterface
         $order = $this->quoteManagement->submit($quote);
 
         if ($order->getEntityId()) {
+            $this->orderCreationResult = [
+                'error'              => 0,
+                'order_id'           => $order->getId(),
+                'order_increment_id' => $order->getIncrementId(),
+                'order_status'       => $order->getStatus(),
+                'quote_id'           => $quote->getId(),
+            ];
+
             // Assign Customer
             $this->orderHelper->assignCustomerToOrder($order);
 
@@ -389,6 +412,8 @@ class Order implements OrderInterface
                 $order->setStatus($orderStatus)->save();
             }
 
+            $this->orderCreationResult['order_status'] = $order->getStatus();
+
             // Send Order Confirmation Email to Customer.
             if (!$order->getEmailSent()) {
                 $this->orderSender->send($order);
@@ -398,13 +423,6 @@ class Order implements OrderInterface
             if(isset($data['custom_data']['order']) && $data['custom_data']['order']) {
                 $this->customDataProvider->saveDataToOrder($order, $data['custom_data']['order']);
             }
-
-            $this->orderCreationResult = [
-                'order_id'           => $order->getId(),
-                'order_increment_id' => $order->getIncrementId(),
-                'order_status'       => $order->getStatus(),
-                'quote_id'           => $quote->getId(),
-            ];
         }
     }
 
@@ -471,10 +489,11 @@ class Order implements OrderInterface
     /**
      * @param string $quote_id
      * @param mixed $access_tokens
+     * @param mixed $data
      * @return mixed[]|string
      * @throws Exception
      */
-    public function getQuoteData($quote_id, $access_tokens)
+    public function getQuoteData($quote_id, $access_tokens, $data)
     {
         if (!$this->accessValidator->checkAccess($access_tokens)) {
             return 'Permissions Denied!';
@@ -482,19 +501,30 @@ class Order implements OrderInterface
 
         $quote = $this->quote->getQuote($quote_id);
 
-        if (!$quote->getReservedOrderId()) {
-            try {
-                $quote->reserveOrderId()->save();
-            } catch (\Exception $e) {
-                $this->logger->debug($e->getMessage());
-            }
-        }
+		if(isset($data['validate']) && $data['validate']) {
+			try {
+				$quote->getPayment()->setMethod(IWDCheckoutPayConfigProvider::CODE);
+				$this->quoteValidator->validateBeforeSubmit($quote);
+			} catch (Throwable $e) {
+				return [
+					'error' => 1,
+					'error_message' => $e->getMessage()
+				];
+			}
+
+			$quote->reserveOrderId();
+			$orderIncrementId = $quote->getReservedOrderId();
+
+			if ($orderIncrementId) {
+				$this->quote->saveQuote($quote);
+				$result['reserved_order_id'] = $orderIncrementId;
+			}
+		}
 
         $result['addresses']              = $this->address->formatAddress($quote);
         $result['chosen_delivery_method'] = $this->shippingMethods->getSelectedShippingMethod($quote);
         $result['cart_items']             = $this->cartItems->getItems($quote);
         $result['cart']                   = $this->cartTotals->getTotals($quote);
-        $result['order_id']               = $quote->getReservedOrderId();
 
         return $result;
     }

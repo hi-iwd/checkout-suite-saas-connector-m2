@@ -92,20 +92,30 @@ class Addresses
 
         foreach ($address as $key => $item) {
             $data[$key] = [
-                'firstname'  => $savedAddress[$key]['firstname'] ?? $item['firstname'],
-                'lastname'   => $savedAddress[$key]['lastname'] ?? $item['lastname'],
-                'street'     => $savedAddress[$key]['street'] ?? $item['street'],
-                'country_id' => $savedAddress[$key]['country_id'] ?? $item['country_id'],
-                'region'     => $savedAddress[$key]['region'] ?? $item['region'],
-                'region_id'  => $savedAddress[$key]['region_id'] ?? $item['region_id'],
-                'city'       => $savedAddress[$key]['city'] ?? $item['city'],
-                'postcode'   => $savedAddress[$key]['postcode'] ?? $item['postcode'],
-                'telephone'  => $savedAddress[$key]['telephone'] ?? $item['telephone'],
-                'company'    => $savedAddress[$key]['company'] ?? $item['company']
+                'firstname'  => $this->getSavedAddressValue('firstname', $savedAddress[$key], $item),
+                'lastname'   => $this->getSavedAddressValue('lastname', $savedAddress[$key], $item),
+                'street'     => $this->getSavedAddressValue('street', $savedAddress[$key], $item),
+                'country_id' => $this->getSavedAddressValue('country_id', $savedAddress[$key], $item),
+                'region'     => $this->getSavedAddressValue('region', $savedAddress[$key], $item),
+                'region_id'  => $this->getSavedAddressValue('region_id', $savedAddress[$key], $item),
+                'city'       => $this->getSavedAddressValue('city', $savedAddress[$key], $item),
+                'postcode'   => $this->getSavedAddressValue('postcode', $savedAddress[$key], $item),
+                'telephone'  => $this->getSavedAddressValue('telephone', $savedAddress[$key], $item),
+                'company'    => $this->getSavedAddressValue('company', $savedAddress[$key], $item),
             ];
         }
 
         return $data;
+    }
+
+    /**
+     * @param $key
+     * @param $savedAddress
+     * @param $address
+     * @return mixed
+     */
+    protected function getSavedAddressValue($key, $savedAddress, $address) {
+        return isset($savedAddress[$key]) && $savedAddress[$key] ? $savedAddress[$key] : $address[$key];
     }
 
     /**

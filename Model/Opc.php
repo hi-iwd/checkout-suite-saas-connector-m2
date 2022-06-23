@@ -4,6 +4,7 @@ namespace IWD\CheckoutConnector\Model;
 
 use Exception;
 use IWD\CheckoutConnector\Api\OpcInterface;
+use IWD\CheckoutConnector\Helper\Locale;
 use IWD\CheckoutConnector\Model\Address\Addresses;
 use IWD\CheckoutConnector\Model\Address\Country;
 use IWD\CheckoutConnector\Model\Address\Regions;
@@ -84,6 +85,11 @@ class Opc implements OpcInterface
     private $customDataProvider;
 
     /**
+     * @var Locale
+     */
+    private $localeHelper;
+
+    /**
      * AddressStep constructor.
      *
      * @param CartItems $cartItems
@@ -98,6 +104,7 @@ class Opc implements OpcInterface
      * @param ResolverInterface $localeResolver
      * @param ScopeConfigInterface $scopeConfig
      * @param CustomDataProvider $customDataProvider
+     * @param Locale $localeHelper
      */
     public function __construct(
         CartItems $cartItems,
@@ -111,7 +118,8 @@ class Opc implements OpcInterface
         ResolverInterface $localeResolver,
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
-        CustomDataProvider $customDataProvider
+        CustomDataProvider $customDataProvider,
+        Locale $localeHelper
     ) {
         $this->cartItems = $cartItems;
         $this->cartTotals = $cartTotals;
@@ -125,6 +133,7 @@ class Opc implements OpcInterface
         $this->localeResolver = $localeResolver;
         $this->scopeConfig = $scopeConfig;
         $this->customDataProvider = $customDataProvider;
+        $this->localeHelper = $localeHelper;
     }
 
     /**
@@ -234,10 +243,19 @@ class Opc implements OpcInterface
      */
     private function setStoreLocale($storeId)
     {
-        $localeCode = $this->scopeConfig->getValue('general/locale/code', ScopeInterface::SCOPE_STORE, $storeId);
+        $browserLocale = $this->localeHelper->getBrowserLocale();
+        $storeLocale   = $this->scopeConfig->getValue('general/locale/code', ScopeInterface::SCOPE_STORE, $storeId);
 
-        if ($localeCode) {
-            $this->localeResolver->setLocale($localeCode);
+        foreach ([$browserLocale, $storeLocale] as $locale) {
+            if (!$locale) {
+                continue;
+            }
+
+            try {
+                $this->localeResolver->setLocale($locale);
+
+                return;
+            } catch (Exception $e) {}
         }
     }
 }

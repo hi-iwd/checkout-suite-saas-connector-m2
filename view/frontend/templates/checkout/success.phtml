@@ -1,11 +1,13 @@
 <script>
-    window.addEventListener('load', function () {
-        require(['Magento_Customer/js/customer-data', 'domReady!'], function (customerData) {
-            var sections = ['cart'];
+    require(['Magento_Customer/js/customer-data', 'domReady!'], function (customerData) {
+        var sections = ['cart'];
+
+        try {
             customerData.initStorage();
-            customerData.invalidate(sections);
-            customerData.reload(sections, true);
-        });
+        } catch(e) {}
+
+        customerData.invalidate(sections);
+        customerData.reload(sections, true);
     });
 </script>
 

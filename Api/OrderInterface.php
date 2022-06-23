@@ -39,7 +39,8 @@ interface OrderInterface
      * @api
      * @param string $quote_id
      * @param mixed $access_tokens
+     * @param mixed $data
      * @return mixed[]|string
      */
-    public function getQuoteData($quote_id, $access_tokens);
+    public function getQuoteData($quote_id, $access_tokens, $data);
 }

@@ -54,4 +54,14 @@ class Quote
 
         return $quote;
     }
+
+	/**
+	 * @param $quote
+	 *
+	 * @return void
+	 */
+	public function saveQuote($quote)
+	{
+		$this->quoteRepository->save($quote);
+	}
 }
