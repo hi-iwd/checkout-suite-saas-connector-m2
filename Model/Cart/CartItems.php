@@ -5,6 +5,7 @@ namespace IWD\CheckoutConnector\Model\Cart;
 use Magento\Catalog\Api\ProductRepositoryInterfaceFactory;
 use Magento\Catalog\Helper\ImageFactory;
 use Magento\Directory\Model\Currency;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\BlockFactory;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
@@ -67,7 +68,14 @@ class CartItems
 
         foreach ($quote->getAllVisibleItems() as $index => $item) {
             $productData = $this->productRepository->create()->getById($item->getProductId());
-            $imageUrl = $this->getImageUrl($productData, 'product_page_image_medium');
+
+	        try {
+		        $imageUrl = $this->getImageUrl($productData, 'product_page_image_medium');
+	        } catch (\Exception $e) {
+		        $imageUrl = $this->productImageHelper->create()->init($productData, 'product_thumbnail_image')
+		                                             ->setImageFile($productData->getThumbnail())->getUrl();
+	        }
+
             $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
 
             $data[] = [
@@ -89,7 +97,7 @@ class CartItems
      * @param $product
      * @param string $imageType
      * @return mixed
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     protected function getImageUrl($product, string $imageType = '')
     {

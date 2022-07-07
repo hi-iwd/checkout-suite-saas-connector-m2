@@ -49,11 +49,6 @@ class Order implements OrderInterface
     private $quoteManagement;
 
     /**
-     * @var MagentoOrder
-     */
-    private $order;
-
-    /**
      * @var OrderFactory
      */
     protected $orderFactory;
@@ -285,19 +280,21 @@ class Order implements OrderInterface
         return $this->orderCreationResult;
     }
 
-    /**
-     * @param $quote_id
-     * @param $data
-     * @param $paymentCode
-     * @param $paymentTitle
-     * @return \Magento\Quote\Model\Quote
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
+	/**
+	 * @param $quote_id
+	 * @param $data
+	 * @param $paymentCode
+	 * @param $paymentTitle
+	 *
+	 * @return \Magento\Quote\Model\Quote
+	 * @throws LocalizedException
+	 * @throws NoSuchEntityException
+	 * @throws Exception
+	 */
     protected function prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle) {
         $quote = $this->quote->getQuote($quote_id);
 
-        // Set Currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
+        // Set Currently selected Currency for Quote. Otherwise, Totals will be collected using Base Currency.
         $this->storeManager->getStore($quote->getStoreId())
             ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
 
@@ -319,8 +316,7 @@ class Order implements OrderInterface
         }
 
         // Set Payment Method
-        $quote->setPaymentMethod($paymentCode);
-	    $this->quote->saveQuote($quote);
+        $quote->getPayment()->setMethod($paymentCode);
 
         // Set Sales Order Payment Info
         $quote->getPayment()->importData(['method' => $paymentCode]);
@@ -340,19 +336,20 @@ class Order implements OrderInterface
         }
 
         // Collect Totals & Save Quote
-        $quote->collectTotals();
-	    $this->quote->saveQuote($quote);
+	    $quote->collectTotals()->save();
 
         return $quote;
     }
 
-    /**
-     * @param $quote
-     * @param $data
-     * @param $paymentTitle
-     * @param null $orderStatus
-     * @throws LocalizedException
-     */
+	/**
+	 * @param $quote
+	 * @param $data
+	 * @param $paymentTitle
+	 * @param  null  $orderStatus
+	 *
+	 * @throws LocalizedException
+	 * @throws Exception
+	 */
     protected function processOrderCreation($quote, $data, $paymentTitle, $orderStatus = null) {
         // Create Order From Quote
         $order = $this->quoteManagement->submit($quote);
@@ -380,6 +377,7 @@ class Order implements OrderInterface
                 foreach($data['comments'] as $commentType => $commentVal) {
                     $order->addStatusHistoryComment(__($commentVal));
                 }
+	            $order->save();
             }
 
             $order->getPayment()->setIsTransactionClosed(0);
@@ -447,10 +445,10 @@ class Order implements OrderInterface
 
             if ($paymentAction == 'capture' && $transaction) {
                 $order->getPayment()->setIsTransactionClosed(0);
-                $this->orderHelper->addTransactionToOrder($order, $transaction, Transaction::TYPE_CAPTURE, 'captured');
+                $this->orderHelper->addTransactionToOrder($order, $transaction['capture'], Transaction::TYPE_CAPTURE, 'captured');
                 $this->invoiceManagement->addInvoiceToOrder($order, $transaction['capture']['id']);
             } elseif ($paymentAction == 'refund' && $transaction) {
-                $this->orderHelper->addTransactionToOrder($order, $transaction, Transaction::TYPE_REFUND, 'refunded');
+                $this->orderHelper->addTransactionToOrder($order, $transaction['refund'], Transaction::TYPE_REFUND, 'refunded');
                 $this->invoiceManagement->refundInvoiceByOrder($order, $transaction['refund']['id']);
 
                 $this->removeComment($order->getId());
@@ -472,9 +470,11 @@ class Order implements OrderInterface
                 $this->orderRepository->save($order);
             }
 
+			$updatedOrder = $this->orderRepository->get($order->getId());
+
             $result = [
                 'error' => 0,
-                'order_status' => $order->getStatus()
+                'order_status' => $updatedOrder->getStatus()
             ];
         } else {
             $result = [
@@ -501,7 +501,7 @@ class Order implements OrderInterface
 
         $quote = $this->quote->getQuote($quote_id);
 
-		if(isset($data['validate']) && $data['validate']) {
+		if (isset($data['validate']) && $data['validate']) {
 			try {
 				$quote->getPayment()->setMethod(IWDCheckoutPayConfigProvider::CODE);
 				$this->quoteValidator->validateBeforeSubmit($quote);

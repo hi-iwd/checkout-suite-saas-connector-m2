@@ -63,8 +63,8 @@ class CaptureRequestBuilder implements BuilderInterface
             self::AMOUNT             => SubjectReader::readAmount($buildSubject),
             self::ORDER_ID           => $order->getOrderIncrementId(),
             self::TRANSACTION_ID     => $payment->getLastTransId(),
-            self::INTEGRATION_KEY    => $this->config->getIntegrationApiKey(),
-            self::INTEGRATION_SECRET => $this->config->getIntegrationApiSecret(),
+            self::INTEGRATION_KEY    => $this->config->getIntegrationApiKey($order->getStoreId()),
+            self::INTEGRATION_SECRET => $this->config->getIntegrationApiSecret($order->getStoreId()),
             self::CURRENCY           => $currencyCode
         ];
     }

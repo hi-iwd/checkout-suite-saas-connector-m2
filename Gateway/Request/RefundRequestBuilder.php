@@ -49,8 +49,8 @@ class RefundRequestBuilder implements BuilderInterface
             self::TRANSACTION_ID     => $payment->getParentTransactionId(),
             self::AMOUNT             => SubjectReader::readAmount($buildSubject),
             self::ORDER_ID           => $orderDO->getOrderIncrementId(),
-            self::INTEGRATION_KEY    => $this->config->getIntegrationApiKey(),
-            self::INTEGRATION_SECRET => $this->config->getIntegrationApiSecret(),
+            self::INTEGRATION_KEY    => $this->config->getIntegrationApiKey($orderDO->getStoreId()),
+            self::INTEGRATION_SECRET => $this->config->getIntegrationApiSecret($orderDO->getStoreId()),
             self::CURRENCY           => $currencyCode
         ];
     }

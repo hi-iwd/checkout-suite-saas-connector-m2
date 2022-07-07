@@ -49,8 +49,8 @@ class VoidRequestBuilder implements BuilderInterface
         return [
             self::TRANSACTION_ID     => $payment->getLastTransId(),
             self::ORDER_ID           => $orderDO->getOrderIncrementId(),
-            self::INTEGRATION_KEY    => $this->config->getIntegrationApiKey(),
-            self::INTEGRATION_SECRET => $this->config->getIntegrationApiSecret(),
+            self::INTEGRATION_KEY    => $this->config->getIntegrationApiKey($orderDO->getStoreId()),
+            self::INTEGRATION_SECRET => $this->config->getIntegrationApiSecret($orderDO->getStoreId()),
         ];
     }
 }
