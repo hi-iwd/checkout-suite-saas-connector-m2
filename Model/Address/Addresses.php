@@ -114,11 +114,16 @@ class Addresses
      * @param $address
      * @return mixed
      */
-    protected function getSavedAddressValue($key, $savedAddress, $address) {
-		if (isset($savedAddress[$key]) && $savedAddress[$key]) return $savedAddress[$key];
-		if (isset($address[$key]) && $address[$key]) return $address[$key];
-	    return '';
-    }
+	protected function getSavedAddressValue($key, $savedAddress, $address)
+	{
+		if (isset($savedAddress[$key]) && $savedAddress[$key]) {
+			return $savedAddress[$key];
+		}
+		if (isset($address[$key]) && $address[$key]) {
+			return $address[$key];
+		}
+		return '';
+	}
 
     /**
      * @param $quote
