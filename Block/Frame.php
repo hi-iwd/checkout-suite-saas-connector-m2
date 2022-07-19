@@ -168,12 +168,44 @@ class Frame extends CheckoutOnepage
     {
         return [
             'checkoutIframeId' => $this->getCheckoutIframeId(),
-            'editCartUrl'      => $this->getUrl('checkout/cart'),
-            'loginUrl'         => $this->getUrl('customer/ajax/login/'),
-            'resetPasswordUrl' => $this->getUrl('customer/account/forgotpassword/'),
-            'successActionUrl' => $this->getUrl('checkout_page/index/success')
+            'editCartUrl'      => $this->getEditCartUrl(),
+            'loginUrl'         => $this->getLoginUrl(),
+            'resetPasswordUrl' => $this->getResetPasswordUrl(),
+            'successActionUrl' => $this->getSuccessActionUrl()
         ];
     }
+
+	/**
+	 * @return string
+	 */
+	public function getSuccessActionUrl()
+	{
+		return $this->getUrl('checkout_page/index/success');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEditCartUrl()
+	{
+		return $this->getUrl('checkout/cart');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLoginUrl()
+	{
+		return $this->getUrl('customer/ajax/login/');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getResetPasswordUrl()
+	{
+		return $this->getUrl('customer/account/forgotpassword/');
+	}
 
     /**
      * @return mixed

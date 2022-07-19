@@ -28,7 +28,6 @@ define(
                 this._super();
 
                 if (!window.ApplePaySession) {
-                    console.error('This device does not support Apple Pay');
                     return;
                 }
 

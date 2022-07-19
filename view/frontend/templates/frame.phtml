@@ -28,21 +28,72 @@
 </div>
 
 <script type="text/javascript">
-    // Resize Iframe
-    require(['IWD_CheckoutConnector/js/libs/iframeResizer'], function(iframeResizer) {
-        iframeResizer({log:false, checkOrigin: false}, '#<?= $block->getCheckoutIframeId() ?>');
-    });
+    require([
+            'jquery',
+            'IWD_CheckoutConnector/js/libs/iframeResizer'
+        ],
+        function ($, iframeResizer) {
+            // Resize Iframe
+            iframeResizer({log: false, checkOrigin: false}, '#<?= $block->getCheckoutIframeId() ?>');
 
-    // Hide loader when checkout page inside the iframe was loaded
-    let hideLoader = function(event) {
-        if (event.data.hideLoader) {
-            document.getElementById('js-iwd-loader').style.display = 'none';
+            // Hide loader when checkout page inside the iframe was loaded
+            let hideLoader = function (event) {
+                if (event.data.hideLoader) {
+                    document.getElementById('js-iwd-loader').style.display = 'none';
+                }
+            };
+
+            let changeUrlAction = function (event) {
+                if (event.data.changeUrlAction === 'edit_cart') {
+                    window.location.href = '<?= $block->getEditCartUrl() ?>';
+                } else if (event.data.changeUrlAction === 'authenticate') {
+                    let data = {username: event.data.login, password: event.data.password};
+
+                    $.ajax({
+                        dataType: "json",
+                        method: "POST",
+                        url: '<?= $block->getLoginUrl() ?>',
+                        data: JSON.stringify(data)
+                    }).done(function (response) {
+                        if (response.errors) {
+                            sendMessage(response.message);
+                        } else {
+                            location.reload(true);
+                        }
+                    }).fail(function () {
+                        let msg = '<?= __('Could not authenticate. Please try again later') ?>';
+                        sendMessage(msg);
+                    });
+                } else if (event.data.changeUrlAction === 'reset_pass') {
+                    window.location.href = '<?= $block->getResetPasswordUrl() ?>';
+                }
+            };
+
+            let sendMessage = function (msg) {
+                document.getElementById('<?= $block->getCheckoutIframeId() ?>').contentWindow.postMessage({
+                    'action': 'sendMassage',
+                    'message': msg
+                }, '*');
+            };
+
+            let actionSuccess = function (event) {
+                if (event.data.actionSuccess) {
+                    let successUrl = '<?= $block->getSuccessActionUrl() ?>',
+                        successParams = event.data.actionSuccess;
+
+                    window.location.href = successUrl + '?' + successParams;
+                }
+            };
+
+            if (window.addEventListener) {
+                window.addEventListener("message", changeUrlAction, false);
+                window.addEventListener("message", hideLoader, false);
+                window.addEventListener("message", actionSuccess, false);
+            } else if (window.attachEvent) {
+                window.attachEvent("onmessage", changeUrlAction);
+                window.attachEvent("onmessage", hideLoader);
+                window.attachEvent("onmessage", actionSuccess);
+            }
         }
-    };
-
-    if (window.addEventListener) {
-        window.addEventListener("message", hideLoader, false);
-    } else if (window.attachEvent) {
-        window.attachEvent("onmessage", hideLoader);
-    }
+    );
 </script>
