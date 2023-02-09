@@ -182,6 +182,11 @@ class Order extends AbstractHelper
 
             // Prepare payment object
             $payment = $order->getPayment();
+
+	        if (isset($transaction['additional_info']) && $transaction['additional_info']) {
+		        $payment->setAdditionalInformation('iwd_additional_info', $transaction['additional_info']);
+	        }
+
             $payment->setLastTransId($txnId);
             $payment->setTransactionId($txnId);
             $method = $payment->getMethodInstance();

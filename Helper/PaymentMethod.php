@@ -2,7 +2,7 @@
 
 namespace IWD\CheckoutConnector\Helper;
 
-use IWD\CheckoutConnector\Model\ResourceModel\PaymentMethod\CollectionFactory;
+use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -35,7 +35,7 @@ class PaymentMethod extends AbstractHelper
     /**
      * @var CollectionFactory
      */
-    private $paymentMethod;
+    private $paymentCollectionFactory;
 
     /**
      * @var IWDCheckoutPayConfigProvider
@@ -49,7 +49,7 @@ class PaymentMethod extends AbstractHelper
      * @param Http $request
      * @param Invoice $invoice
      * @param Creditmemo $creditmemo
-     * @param CollectionFactory $paymentMethod
+     * @param CollectionFactory $paymentCollectionFactory
      * @param IWDCheckoutPayConfigProvider $configProvider
      */
     public function __construct(
@@ -57,13 +57,13 @@ class PaymentMethod extends AbstractHelper
         Http $request,
         Invoice $invoice,
         Creditmemo $creditmemo,
-        CollectionFactory $paymentMethod,
+        CollectionFactory $paymentCollectionFactory,
         IWDCheckoutPayConfigProvider $configProvider
     ) {
         parent::__construct($context);
 
         $this->request = $request;
-        $this->paymentMethod = $paymentMethod;
+	    $this->paymentCollectionFactory = $paymentCollectionFactory;
         $this->invoice = $invoice;
         $this->creditmemo = $creditmemo;
         $this->configProvider = $configProvider;
@@ -84,7 +84,7 @@ class PaymentMethod extends AbstractHelper
             }
         }
 
-        $paymentMethod = $this->getCollection($orderId);
+        $paymentMethod = $this->getCollection('parent_id', $orderId);
 
         if($paymentMethod->getSize()) {
             switch ($action){
@@ -93,50 +93,102 @@ class PaymentMethod extends AbstractHelper
                 case 'sales_order_invoice_new':
                 case 'sales_order_creditmemo_new':
                 case 'sales_order_view':
-                    return $paymentMethod->getFirstItem()->getPaymentMethod();
-                    break;
+                    return $paymentMethod->getFirstItem()->getAdditionalInformation()['iwd_method_title'];
             }
         }
 
         return false;
     }
 
-    /**
-     * @param $result
-     * @return bool
-     */
-    public function updatePaymentMethodList($result) {
-        $action  = $this->request->getFullActionName();
-        $orderId = $this->request->getParam('order_id');
-        $paymentMethodCode = $this->configProvider->getPaymentMethodCode();
-
-        if($action == 'sales_order_view') {
-            $paymentMethod = $this->getCollection($orderId);
-
-            if($paymentMethod->getSize()) {
-                if(isset($result[$paymentMethodCode])) {
-                    if(gettype($result[$paymentMethodCode]) == 'string') {
-                        $result[$paymentMethodCode] = $paymentMethod->getFirstItem()->getPaymentMethod();
-                    } else {
-                        $result[$paymentMethodCode]['label'] = $paymentMethod->getFirstItem()->getPaymentMethod();
-                    }
-                }
-            }
-
-            return $result;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param $orderId
-     * @return mixed
-     */
-    public function getCollection($orderId){
-        $paymentMethod = $this->paymentMethod->create();
-        $paymentMethod->addFieldToFilter('order_id',array('eq' => $orderId));
+	/**
+	 * @param $key
+	 * @param $value
+	 *
+	 * @return mixed
+	 */
+    public function getCollection($key, $value)
+    {
+        $paymentMethod = $this->paymentCollectionFactory->create();
+        $paymentMethod->addFieldToFilter($key, ['eq' => $value]);
 
         return $paymentMethod;
     }
+
+	/**
+	 * @param $additionalInfo
+	 *
+	 * @return string
+	 */
+	public function getAdditionalInfoHtml($additionalInfo)
+	{
+		$html = '<br><br>';
+
+		foreach($additionalInfo as $title => $value) {
+			$html .= '<b>'.__($title).': </b>'.$value.'<br>';
+		}
+
+		return $html;
+	}
+
+	/**
+	 * @param $additionalInfo
+	 *
+	 * @return string
+	 */
+	public function getAdditionalNotificationInfoHtml($additionalInfo)
+	{
+		$method = $additionalInfo['iwd_method_code'];
+		$info = $additionalInfo['iwd_additional_info'];
+		$tdStyle = 'width: 50%; padding: 2px 2px 2px 0;';
+
+		$html = '<h3 style="margin-top: 30px">'.__('Payment Information').'</h3>';
+		$html .= '<table style="width: 100%">';
+
+		foreach($info as $title => $value) {
+			$html .= '<tr>';
+			$html .= '<td style="'.$tdStyle.'"><b>'.__($title).'</b></td>';
+			$html .= '<td style="'.$tdStyle.'">'.$value.'</td>';
+			$html .= '</tr>';
+
+			if ($title === 'Payment Reference') {
+				$html .= '<tr><td style="padding-bottom: 20px"></td></tr>';
+			}
+		}
+
+		$html .= '</table>';
+
+		if ($method === 'pay_upon_invoice') {
+			$message = 'Please also note that our company has assigned the due purchase price claim from your order '
+			           .'including any ancillary claims to Ratepay GmBH. The owner of the claim is thus Ratepay GmBH. '
+			           .'A debt-discharging service is only possible to Ratepay GmBH, stating the purpose of use. '
+			           .'The additional terms and conditions and the data protection notice of Ratepay GmBH apply:';
+
+			$html .= '<p style="margin-top: 20px; font-size: 11px">';
+			$html .= __($message);
+			$html .= '<br><a href="https://www.retepay.com/legal/" target="_blank">https://www.retepay.com/legal/</a>';
+			$html .= '</p>';
+
+			$html .= '<h4 style="margin: 30px 0 10px;">'.__('Questions About Payment').'</h4>';
+			$html .= '<table style="width: 100%">';
+			$html .= '<tr>';
+			$html .= '<td style="'.$tdStyle.'">'.__('Online').'</td>';
+			$html .= '<td style="'.$tdStyle.'"><a href="https://myratepay.com" target="_blank">myratepay.com</a></td>';
+			$html .= '</tr>';
+			$html .= '<tr>';
+			$html .= '<td style="'.$tdStyle.'">'.__('Email').'</td>';
+			$html .= '<td style="'.$tdStyle.'"><a href="mailto:payment@ratepay.com">payment@ratepay.com</a></td>';
+			$html .= '</tr>';
+			$html .= '<tr>';
+			$html .= '<td style="'.$tdStyle.'">'.__('Telephone').'</td>';
+			$html .= '<td style="'.$tdStyle.'"><a href="tel:+4930983208620">+49 30 9832086 20</a></td>';
+			$html .= '</tr>';
+			$html .= '<tr>';
+			$html .= '<td style="'.$tdStyle.'">'.__('Monday - Friday').'</td>';
+			$html .= '<td style="'.$tdStyle.'">08:00 - 19:00 UHR</td>';
+			$html .= '</tr>';
+			$html .= '</table>';
+		}
+
+		return $html;
+	}
 }

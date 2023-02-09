@@ -6,7 +6,6 @@
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">
-                <item name="sales_order_grid_data_source" xsi:type="string">IWD\CheckoutConnector\Model\ResourceModel\Order\Grid\Collection</item>
                 <item name="sales_order_invoice_grid_data_source" xsi:type="string">IWD\CheckoutConnector\Model\ResourceModel\Order\Invoice\Grid\Collection</item>
                 <item name="sales_order_shipment_grid_data_source" xsi:type="string">IWD\CheckoutConnector\Model\ResourceModel\Order\Shipment\Grid\Collection</item>
                 <item name="sales_order_creditmemo_grid_data_source" xsi:type="string">IWD\CheckoutConnector\Model\ResourceModel\Order\Creditmemo\Grid\Collection</item>
@@ -41,7 +40,7 @@
         <arguments>
             <argument name="code" xsi:type="const">IWD\CheckoutConnector\Model\Ui\IWDCheckoutPayConfigProvider::CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
-            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\ConfigurableInfo</argument>
+            <argument name="infoBlockType" xsi:type="string">IWD\CheckoutConnector\Block\Info\IWDCheckoutPay</argument>
             <argument name="valueHandlerPool" xsi:type="object">IWDCheckoutPayValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IWDCheckoutPayCommandPool</argument>
         </arguments>

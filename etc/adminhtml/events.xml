@@ -3,4 +3,13 @@
     <event name="sales_order_save_after">
         <observer name="iwd_sales_order_save_after" instance="IWD\CheckoutConnector\Observer\ChangeOrderStatus" />
     </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="iwd_sales_order_shipment_save_after" instance="IWD\CheckoutConnector\Observer\SaveOrderShipment" />
+    </event>
+    <event name="sales_order_shipment_track_save_after">
+        <observer name="iwd_sales_order_shipment_track_save_after" instance="IWD\CheckoutConnector\Observer\SaveOrderShipmentTrack" />
+    </event>
+    <event name="sales_order_shipment_track_delete_after">
+        <observer name="iwd_sales_order_shipment_track_delete_after" instance="IWD\CheckoutConnector\Observer\DeleteOrderShipmentTrack" />
+    </event>
 </config>

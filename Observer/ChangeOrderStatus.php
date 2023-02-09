@@ -4,53 +4,41 @@ namespace IWD\CheckoutConnector\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use IWD\CheckoutConnector\Model\Order\ChangeOrderStatus as OrderStatus;
+use IWD\CheckoutConnector\Model\Order\OrderUpdater;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Class ChangeOrderStatus
+ *
  * @package IWD\CheckoutConnector\Observer
  */
 class ChangeOrderStatus implements ObserverInterface
 {
     /**
-     * @var OrderStatus
+     * @var OrderUpdater
      */
-    private $orderStatus;
-
-    private $iwdPaymentMethods = [
-        'iwd_checkout_pay',
-        'iwd_checkout_offline_pay_checkmo',
-        'iwd_checkout_offline_pay_zero',
-        'iwd_checkout_offline_pay_cashondelivery',
-        'iwd_checkout_offline_pay_banktransfer',
-        'iwd_checkout_offline_pay_purchaseorder',
-        'iwd_checkout_offline_pay_custom',
-        'iwd_checkout_multiple_payment',
-    ];
+    private $orderUpdater;
 
     /**
      * ChangeOrderStatus constructor.
-     * @param OrderStatus $orderStatus
+     *
+     * @param OrderUpdater $orderUpdater
      */
     public function __construct(
-        OrderStatus $orderStatus
+	    OrderUpdater $orderUpdater
     ) {
-        $this->orderStatus = $orderStatus;
+        $this->orderUpdater = $orderUpdater;
     }
 
-    /**
-     * @param Observer $observer
-     */
+	/**
+	 * @param  Observer  $observer
+	 *
+	 * @return void
+	 * @throws LocalizedException
+	 */
     public function execute(Observer $observer)
     {
-        $order = $observer->getEvent()->getOrder();
-        $payment_method_code = $order->getPayment()->getMethodInstance()->getCode();
-        $shipping_method_code = $order->getShippingMethod();
-        if (
-            in_array($payment_method_code,$this->iwdPaymentMethods)
-            && $shipping_method_code != \IWD\CheckoutConnector\Model\Carrier\Subscription::CODE
-        ) {
-            $this->orderStatus->changeStatus($order);
-        }
+	    $this->orderUpdater->setOrder($observer->getEvent()->getOrder());
+		$this->orderUpdater->update();
     }
 }

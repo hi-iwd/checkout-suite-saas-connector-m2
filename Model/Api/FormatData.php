@@ -44,16 +44,22 @@ class FormatData
         foreach ($data as $key => $item) {
             if($key === 'billing' || $key === 'shipping') {
                 $regionId = isset($item["region_id"]) ? $item["region_id"] : null;
+	            $street = isset($item['address']) ? $item['address'] : null;
 
                 if(isset($item["state"]) && !$regionId && $regionData = $this->getRegionDataFromNameIfExists($item["state"])) {
                     $regionId = $regionData['region_id'];
                 }
 
+				// Move phrase after last coma to the new line
+				if($street && strpos($street, ', ') !== false) {
+					$street = substr_replace($street, "\n", strrpos($street, ", "), 2);
+				}
+
                 $formatData[$key] = [
                     "region_id"       => $regionId,
                     "region"          => isset($item["state"]) ? $item["state"] : null,
                     "country_id"      => isset($item['country']) ? $item['country'] : null,
-                    "street"          => isset($item['address']) ? $item['address'] : null,
+                    "street"          => $street,
                     "postcode"        => isset($item['postcode']) ? $item['postcode'] : null,
                     "city"            => isset($item['city']) ? $item['city'] : null,
                     "firstname"       => isset($item['first_name']) ? $item['first_name'] : null,

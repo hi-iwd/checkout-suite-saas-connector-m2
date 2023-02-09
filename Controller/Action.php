@@ -14,6 +14,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\RawFactory;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Sales\Model\OrderFactory;
 
 /**
  * Class Action
@@ -31,6 +32,7 @@ abstract class Action extends MagentoAction
     public $checkoutSession;
     public $resultPageFactory;
     public $helper;
+	public $orderFactory;
 
     /**
      * Action constructor.
@@ -45,6 +47,7 @@ abstract class Action extends MagentoAction
      * @param PageFactory $resultPageFactory
      * @param Helper $helper
      * @param AccountManagementInterface $accountManagement
+     * @param OrderFactory $orderFactory
      */
     public function __construct(
         Context $context,
@@ -56,7 +59,8 @@ abstract class Action extends MagentoAction
         CheckoutSession $checkoutSession,
         PageFactory $resultPageFactory,
         Helper $helper,
-        AccountManagementInterface $accountManagement
+        AccountManagementInterface $accountManagement,
+	    OrderFactory $orderFactory
     ) {
         $this->helper = $helper;
         $this->resultPageFactory = $resultPageFactory;
@@ -67,6 +71,7 @@ abstract class Action extends MagentoAction
         $this->accountManagement = $accountManagement;
         $this->resultRawFactory = $resultRawFactory;
         $this->checkoutHelper = $checkoutHelper;
+	    $this->orderFactory = $orderFactory;
         parent::__construct($context);
     }
 

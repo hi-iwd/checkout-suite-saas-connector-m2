@@ -3,6 +3,7 @@
 namespace IWD\CheckoutConnector\Model\Cart;
 
 use Magento\Directory\Model\Currency;
+use Magento\Framework\Module\ModuleListInterface;
 
 /**
  * Class CartTotals
@@ -16,15 +17,23 @@ class CartTotals
      */
     private $currency;
 
-    /**
+	/**
+	 * @var ModuleListInterface
+	 */
+	private $moduleList;
+
+	/**
      * CartTotals constructor.
      *
-     * @param Currency $currency
+	 * @param  Currency  $currency
+	 * @param  ModuleListInterface  $moduleList
      */
     public function __construct(
-        Currency $currency
+        Currency $currency,
+	    ModuleListInterface $moduleList
     ) {
         $this->currency = $currency;
+	    $this->moduleList = $moduleList;
     }
 
     /**
@@ -36,6 +45,7 @@ class CartTotals
         $quoteShippingAddress = $quote->getShippingAddress();
 
         return [
+			'version'           => $this->moduleList->getOne('IWD_CheckoutConnector')['setup_version'],
             'is_virtual'        => $quote->isVirtual(),
             'quote_currency'    => $quote->getQuoteCurrencyCode(),
             'currency'          => $quote->getBaseCurrencyCode(),

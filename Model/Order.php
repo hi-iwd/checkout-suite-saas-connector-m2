@@ -351,77 +351,80 @@ class Order implements OrderInterface
 	 * @throws Exception
 	 */
     protected function processOrderCreation($quote, $data, $paymentTitle, $orderStatus = null) {
-        // Create Order From Quote
-        $order = $this->quoteManagement->submit($quote);
+        // Order validation to avoid duplicate
+        try {
+            $order = $this->orderFactory->create()->loadByIncrementId($quote->getReservedOrderId());
 
-        if ($order->getEntityId()) {
-            $this->orderCreationResult = [
-                'error'              => 0,
-                'order_id'           => $order->getId(),
-                'order_increment_id' => $order->getIncrementId(),
-                'order_status'       => $order->getStatus(),
-                'quote_id'           => $quote->getId(),
-            ];
-
-            // Assign Customer
-            $this->orderHelper->assignCustomerToOrder($order);
-
-            //Save Payment Information
-            $payment = $this->paymentInterface->create();
-            $payment->setPaymentMethod($paymentTitle);
-            $payment->setOrderId($order->getId());
-            $this->paymentRepositoryInterface->save($payment);
-
-            // Add Comments To Order
-            if(isset($data['comments']) && $data['comments']) {
-                foreach($data['comments'] as $commentType => $commentVal) {
-                    $order->addStatusHistoryComment(__($commentVal));
-                }
-	            $order->save();
+            if($order->getId()) {
+                $this->setOrderCreationResult($order, $quote);
+                return;
             }
-
-            $order->getPayment()->setIsTransactionClosed(0);
-
-            // Set Transactions for Order
-            if(isset($data['payment_action']) && $data['payment_action'] && isset($data['transactions']) && $data['transactions']) {
-                $paymentAction = $data['payment_action'];
-                $transactions = $data['transactions'];
-
-                if ($paymentAction == 'authorize') {
-                    $this->orderHelper->addTransactionToOrder(
-                        $order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized'
-                    );
-                } elseif ($paymentAction == 'auth_and_capture' || $paymentAction == 'capture') {
-                    if ($paymentAction == 'auth_and_capture') {
-                        $this->orderHelper->addTransactionToOrder(
-                            $order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized'
-                        );
-                    }
-
-                    $this->orderHelper->addTransactionToOrder(
-                        $order, $transactions['capture'], Transaction::TYPE_CAPTURE, 'captured'
-                    );
-                    $this->invoiceManagement->addInvoiceToOrder($order, $transactions['capture']['id']);
-                }
-            }
-
-            // Set Order Status
-            if($orderStatus) {
-                $order->setStatus($orderStatus)->save();
-            }
-
-            $this->orderCreationResult['order_status'] = $order->getStatus();
-
-            // Send Order Confirmation Email to Customer.
-            if (!$order->getEmailSent()) {
-                $this->orderSender->send($order);
-            }
-
-            // Save Custom Data to Order
-            if(isset($data['custom_data']['order']) && $data['custom_data']['order']) {
-                $this->customDataProvider->saveDataToOrder($order, $data['custom_data']['order']);
-            }
+        } catch (\Exception $e) {
+            // Do nothing, continue create order process
         }
+
+	    // Create Order From Quote
+	    $order = $this->quoteManagement->submit($quote);
+
+	    if ($order->getEntityId()) {
+            $this->setOrderCreationResult($order, $quote);
+
+		    // Assign Customer
+		    try {
+			    $this->orderHelper->assignCustomerToOrder($order);
+		    } catch (Throwable $e) {}
+
+		    //Save Payment Information
+		    $payment = $this->paymentInterface->create();
+		    $payment->setPaymentMethod($paymentTitle);
+		    $payment->setOrderId($order->getId());
+		    $this->paymentRepositoryInterface->save($payment);
+
+		    // Add Comments To Order
+		    if (isset($data['comments']) && $data['comments']) {
+			    foreach ($data['comments'] as $commentType => $commentVal) {
+				    $order->addStatusHistoryComment(__($commentVal));
+			    }
+			    $order->save();
+		    }
+
+		    $order->getPayment()->setIsTransactionClosed(0);
+
+		    // Set Transactions for Order
+		    if (isset($data['payment_action']) && $data['payment_action'] && isset($data['transactions']) && $data['transactions']) {
+			    $paymentAction = $data['payment_action'];
+			    $transactions  = $data['transactions'];
+
+			    if ($paymentAction == 'authorize') {
+				    $this->orderHelper->addTransactionToOrder(
+					    $order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized'
+				    );
+			    } elseif ($paymentAction == 'auth_and_capture' || $paymentAction == 'capture') {
+				    if ($paymentAction == 'auth_and_capture') {
+					    $this->orderHelper->addTransactionToOrder(
+						    $order, $transactions['authorization'], Transaction::TYPE_AUTH, 'authorized'
+					    );
+				    }
+
+				    $this->orderHelper->addTransactionToOrder(
+					    $order, $transactions['capture'], Transaction::TYPE_CAPTURE, 'captured'
+				    );
+				    $this->invoiceManagement->addInvoiceToOrder($order, $transactions['capture']['id']);
+			    }
+		    }
+
+		    // Set Order Status
+		    if ($orderStatus) {
+			    $order->setStatus($orderStatus)->save();
+		    }
+
+		    $this->orderCreationResult['order_status'] = $order->getStatus();
+
+		    // Save Custom Data to Order
+		    if (isset($data['custom_data']['order']) && $data['custom_data']['order']) {
+			    $this->customDataProvider->saveDataToOrder($order, $data['custom_data']['order']);
+		    }
+	    }
     }
 
     /**
@@ -445,6 +448,7 @@ class Order implements OrderInterface
 
             if ($paymentAction == 'capture' && $transaction) {
                 $order->getPayment()->setIsTransactionClosed(0);
+
                 $this->orderHelper->addTransactionToOrder($order, $transaction['capture'], Transaction::TYPE_CAPTURE, 'captured');
                 $this->invoiceManagement->addInvoiceToOrder($order, $transaction['capture']['id']);
             } elseif ($paymentAction == 'refund' && $transaction) {
@@ -501,9 +505,14 @@ class Order implements OrderInterface
 
         $quote = $this->quote->getQuote($quote_id);
 
+        // Set currently selected Currency for Quote. Otherwise Totals will be collected using Base Currency.
+        $this->storeManager->getStore($quote->getStoreId())
+            ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
+
 		if (isset($data['validate']) && $data['validate']) {
 			try {
 				$quote->getPayment()->setMethod(IWDCheckoutPayConfigProvider::CODE);
+                $quote->getBillingAddress()->setShouldIgnoreValidation(true);
 				$this->quoteValidator->validateBeforeSubmit($quote);
 			} catch (Throwable $e) {
 				return [
@@ -552,5 +561,19 @@ class Order implements OrderInterface
                 $this->orderStatusHistoryRepository->delete($comment);
             } catch (Exception $e) {}
         }
+    }
+
+    /**
+     * @param $order
+     * @param $quote
+     */
+    private function setOrderCreationResult($order, $quote) {
+        $this->orderCreationResult = [
+            'error'              => 0,
+            'order_id'           => $order->getId(),
+            'order_increment_id' => $order->getIncrementId(),
+            'order_status'       => $order->getStatus(),
+            'quote_id'           => $quote->getId(),
+        ];
     }
 }

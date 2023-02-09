@@ -66,20 +66,22 @@ class ShippingMethods
             }
         }
 
-        $result = [];
+        $result = ['available' => [], 'unavailable' => []];
 
-        foreach ($output as $key => $method) {
-            if($method->getAvailable() && $method->getMethodCode() != 'subscription') {
-                $result[] = [
-                    'method_code'   => $method->getCarrierCode().'_'.$method->getMethodCode(),
-                    'carrier_title' => $method->getCarrierTitle(),
-                    'method_title'  => $method->getMethodTitle(),
-                    'amount'        => (number_format($method->getAmount(),2,'.','')),
-                ];
-            }
-        }
+	    foreach ($output as $method) {
+		    if ($method->getMethodCode() !== 'subscription') {
+			    $result[$method->getAvailable() ? 'available' : 'unavailable'][] = [
+				    'method_code'   => $method->getCarrierCode().'_'.$method->getMethodCode(),
+				    'carrier_title' => $method->getCarrierTitle(),
+				    'method_title'  => $method->getMethodTitle(),
+				    'amount'        => (number_format($method->getAmount(), 2, '.', '')),
+				    'is_available'  => $method->getAvailable(),
+				    'error_message' => $method->getErrorMessage(),
+			    ];
+		    }
+	    }
 
-        return $result;
+	    return array_merge($result['available'], $result['unavailable']);
     }
 
     /**

@@ -81,7 +81,7 @@ class CartItems
             $data[] = [
                 "name"    => $item->getName(),
                 "sku"     => $item->getSku(),
-                "price"   => $this->currency->format($item->getConvertedPrice(), ['display' => \Zend_Currency::NO_SYMBOL], false),
+                "price"   => number_format($item->getConvertedPrice(), 2, '.', ''),
                 "qty"     => $item->getQty(),
                 "item_id" => $item->getProductId(),
                 "type"    => $item->getProductType(),

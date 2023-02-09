@@ -78,4 +78,30 @@ class MultipleOffline extends Info
     {
         return $this->getInfo()->getOrder()->getPayment()->getPoNumber();
     }
+
+    /**
+     * @param $additionalInformation
+     * @param $poNumber
+     * @return string
+     */
+    public function getCustomPaymentBlockHtml($additionalInformation, $poNumber)
+    {
+        $paymentBlockHtml = '<span class="offline-payment"><br/>';
+
+        if ($extra_details = $this->configProvider->getExtraDetails($additionalInformation['iwd_method_code'])) {
+            $paymentBlockHtml .= '<span class="extra_details"><b>'.__('Extra Details').': </b>' . $extra_details . '</span><br/>';
+        }
+
+        if ($instruction = $this->configProvider->getInstruction($additionalInformation['iwd_method_code'])) {
+            $paymentBlockHtml .= '<span class="instruction"><b>'.__('Instruction').': </b>' . $instruction . '</span><br/>';
+        }
+
+        if ($poNumber) {
+            $paymentBlockHtml .= '<span class="instruction"><b>'.__('Purchase Order Number').': </b>' . $poNumber . '</span><br/>';
+        }
+
+        $paymentBlockHtml .= '</span>';
+
+        return $paymentBlockHtml;
+    }
 }

@@ -25,7 +25,6 @@ class CollectionFactory
      * @var string[]
      */
     private $dataSource = [
-        'sales_order_grid_data_source'            => '\Magento\Sales\Model\ResourceModel\Order\Grid\Collection',
         'sales_order_invoice_grid_data_source'    => '\Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult',
         'sales_order_shipment_grid_data_source'   => '\Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult',
         'sales_order_creditmemo_grid_data_source' => '\Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult'
@@ -71,15 +70,6 @@ class CollectionFactory
     public function addPaymentMethodTitle($dataSource)
     {
         switch ($dataSource){
-            case 'sales_order_grid_data_source':
-                $this->select->joinLeft(
-                    ['iwd_checkout_pay' => $this->resourceConnection->getTableName('iwd_checkout_pay')],
-                    'main_table.entity_id = iwd_checkout_pay.order_id',
-                    [
-                        'iwd_checkout_pay' => 'iwd_checkout_pay.payment_method'
-                    ]
-                );
-                break;
             case 'sales_order_creditmemo_grid_data_source':
             case 'sales_order_shipment_grid_data_source':
             case 'sales_order_invoice_grid_data_source':

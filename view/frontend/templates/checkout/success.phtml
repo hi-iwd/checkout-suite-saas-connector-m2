@@ -11,30 +11,13 @@
     });
 </script>
 
-<?php if(count($this->getPaymentMethodDetails()) > 1): ?>
-    <div class="checkout-success" style="margin-top: 20px;">
-        <h3>Dominate Payment Method Details</h3>
-        <?php foreach ($this->getPaymentMethodDetails() as $key => $detail):?>
-            <?php if(!empty($detail)): ?>
-                <div class="detail">
-                    <span class="key">
-                        <strong>
-                            <?php echo str_replace('_',' ',$key); ?>
-                        </strong>
-                    </span>
-                    <span class="detail">
-                        <?php echo $detail; ?>
-                    </span>
-                </div>
-            <?php endif; ?>
+<?php if($this->getPaymentMethodDetails()): ?>
+    <div class="dominate-payment-details-wrapper">
+        <?php foreach ($this->getPaymentMethodDetails() as $title => $content):?>
+            <p>
+                <strong><?php echo $title; ?>: </strong>
+                <span><?php echo $content; ?></span>
+            </p>
         <?php endforeach;?>
     </div>
-    <style>
-        .detail{
-            margin: 10px 0;
-        }
-        .detail .key{
-            text-transform: capitalize;
-        }
-    </style>
 <?php endif;?>

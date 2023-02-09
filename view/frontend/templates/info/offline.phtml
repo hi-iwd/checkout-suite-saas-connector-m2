@@ -1,30 +1,30 @@
 <div class="offline-payment">
     <div class="title">
-        <b>Payment Title:</b> <?php echo $this->getTitle(); ?>
+        <b><?php echo __('Title') ?>:</b> <?php echo $this->getTitle(); ?>
     </div>
     <?php if($this->getPayableTo() && !empty($this->getPayableTo())):?>
         <div class="payable_to">
-            <b>Make Check Payable to:</b> <?php echo $this->getPayableTo(); ?>
+            <b><?php echo __('Payable To') ?>:</b> <?php echo $this->getPayableTo(); ?>
         </div>
     <?php endif;?>
     <?php if($this->getMailingAddress() && !empty($this->getMailingAddress())):?>
         <div class="mailing_address">
-            <b>Send Check to:</b> <?php echo $this->getMailingAddress(); ?>
+            <b><?php echo __('Mailing Address') ?>:</b> <?php echo $this->getMailingAddress(); ?>
         </div>
     <?php endif;?>
     <?php if($this->getInstruction() && !empty($this->getInstruction())):?>
         <div class="instruction">
-            <b>Instruction:</b> <?php echo $this->getInstruction(); ?>
+            <b><?php echo __('Instructions') ?>:</b> <?php echo $this->getInstruction(); ?>
         </div>
     <?php endif;?>
     <?php if($this->getExtraDetails() && !empty($this->getExtraDetails())):?>
         <div class="extra_details">
-            <b>Extra Details:</b> <?php echo $this->getExtraDetails(); ?>
+            <b><?php echo __('Extra Details') ?>:</b> <?php echo $this->getExtraDetails(); ?>
         </div>
     <?php endif;?>
     <?php if($this->getPONumber() && !empty($this->getPONumber())):?>
         <div class="po_number">
-            <b><?= $this->getFieldName() ?? 'Purchase Order Number' ?>:</b> <?php echo $this->getPONumber(); ?>
+            <b><?= $this->getFieldName() ?? __('Purchase Order Number') ?>:</b> <?php echo $this->getPONumber(); ?>
         </div>
     <?php endif;?>
 </div>

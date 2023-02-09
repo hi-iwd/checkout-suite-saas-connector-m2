@@ -158,7 +158,7 @@ class Data extends AbstractHelper
     /**
      * @return string
      */
-    public function getOrderStatusUpdateUrl()
+    public function getOrderUpdateUrl()
     {
         return $this->getAppUrl() . 'order/change-status';
     }

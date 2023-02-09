@@ -95,4 +95,14 @@ class IWDCheckoutOfflineMultiple implements ConfigProviderInterface
     public function setCode($code){
         $this->code = $code;
     }
+
+    public function getExtraDetails($code) {
+        $this->code = $code;
+        return $this->getConfigData('extra_details');
+    }
+
+    public function getInstruction($code) {
+        $this->code = $code;
+        return $this->getConfigData('instruction');
+    }
 }
