@@ -40,12 +40,12 @@ class CartTotals
      * @param $quote
      * @return array
      */
-    public function getTotals($quote)
+    public function getTotals($quote, $additional = true)
     {
         $quoteShippingAddress = $quote->getShippingAddress();
 
         return [
-			'version'           => $this->moduleList->getOne('IWD_CheckoutConnector')['setup_version'],
+			'version'           => $additional ? $this->moduleList->getOne('IWD_CheckoutConnector')['setup_version'] : null,
             'is_virtual'        => $quote->isVirtual(),
             'quote_currency'    => $quote->getQuoteCurrencyCode(),
             'currency'          => $quote->getBaseCurrencyCode(),
@@ -56,8 +56,8 @@ class CartTotals
             'quote_grand_total' => number_format($quote->getGrandTotal(),2,'.',''),
             'grand_total'       => number_format($quote->getBaseGrandTotal(),2,'.',''),
             'coupon_code'       => $quote->getCouponCode(),
-            'currency_symbol' => $this->currency->getCurrencySymbol(),
-            'country'         => $quoteShippingAddress->getCountryId()
+            'currency_symbol'   => $this->currency->getCurrencySymbol(),
+            'country'           => $additional ? $quoteShippingAddress->getCountryId() : null
         ];
     }
 }

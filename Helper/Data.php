@@ -2,11 +2,15 @@
 
 namespace IWD\CheckoutConnector\Helper;
 
+use IWD\CheckoutConnector\Model\Address\Addresses;
+use IWD\CheckoutConnector\Model\Address\ShippingMethods;
+use IWD\CheckoutConnector\Model\Cart\CartTotals;
 use Magento\Config\Model\ResourceModel\Config;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 
@@ -41,26 +45,46 @@ class Data extends AbstractHelper
      */
     private $url;
 
-    /**
-     * Data constructor.
-     *
-     * @param Context $context
-     * @param Config $resourceConfig
-     * @param StoreManagerInterface $storeManager
-     * @param UrlInterface $url
-     */
-    public function __construct(
-        Context $context,
-        Config $resourceConfig,
-        StoreManagerInterface $storeManager,
-        UrlInterface $url
-    ) {
-        $this->resourceConfig = $resourceConfig;
-        $this->storeManager = $storeManager;
-        $this->url = $url;
+	/**
+	 * @var CartTotals
+	 */
+	private $cartTotals;
 
-        parent::__construct($context);
-    }
+	/**
+	 * @var ShippingMethods
+	 */
+	private $shippingMethods;
+
+	/**
+	 * @var Addresses
+	 */
+	private $address;
+
+	/**
+	 * @param  Context  $context
+	 * @param  Config  $resourceConfig
+	 * @param  StoreManagerInterface  $storeManager
+	 * @param  UrlInterface  $url
+	 * @param  CartTotals  $cartTotals
+	 */
+	public function __construct(
+		Context $context,
+		Config $resourceConfig,
+		StoreManagerInterface $storeManager,
+		UrlInterface $url,
+		CartTotals $cartTotals,
+		ShippingMethods $shippingMethods,
+		Addresses $address
+	) {
+		$this->resourceConfig  = $resourceConfig;
+		$this->storeManager    = $storeManager;
+		$this->url             = $url;
+		$this->cartTotals      = $cartTotals;
+		$this->shippingMethods = $shippingMethods;
+		$this->address         = $address;
+
+		parent::__construct($context);
+	}
 
     /**
      * @param null $storeId
@@ -185,6 +209,11 @@ class Data extends AbstractHelper
         return preg_replace('#^https?://#', '', rtrim($storeUrl,'/'));
     }
 
+	/**
+	 * @param $storeId
+	 *
+	 * @return mixed
+	 */
     public function getDefaultCountryCode($storeId = null){
         return $this->scopeConfig->getValue(
             self::COUNTRY_CODE,
@@ -205,4 +234,31 @@ class Data extends AbstractHelper
             $storeId
         );
     }
+
+	/**
+	 * @param  Quote  $quote
+	 *
+	 * @return array
+	 */
+	public function getFrameParams(Quote $quote)
+	{
+		$addresses = $this->address->formatAddress($quote);
+
+		$this->shippingMethods->getShippingMethods($quote);
+
+		return [
+			'lazy'             => true,
+			'api_key'          => $this->getIntegrationApiKey(),
+			'quote_id'         => $quote->getId(),
+			'shipping_methods' => count($this->shippingMethods->getAvailableShippingMethods()),
+			'cart'             => $this->cartTotals->getTotals($quote, false),
+			'cart_items'       => count($quote->getAllVisibleItems()),
+			'address'          => [
+				'saved'             => (bool) $this->address->getSavedCustomerAddresses($quote),
+				'shipping'          => (bool) $addresses['shipping']['address'],
+				'billing'           => (bool) $addresses['billing']['address'],
+				'ship_bill_to_diff' => $addresses['ship_bill_to_different_address'],
+			],
+		];
+	}
 }

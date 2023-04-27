@@ -29,7 +29,12 @@ class ShippingMethods
      */
     private $converter;
 
-    /**
+	/**
+	 * @var array
+	 */
+	private $availableShippingMethods;
+
+	/**
      * ShippingMethods constructor.
      *
      * @param Addresses $addresses
@@ -81,6 +86,8 @@ class ShippingMethods
 		    }
 	    }
 
+		$this->availableShippingMethods = $result['available'];
+
 	    return array_merge($result['available'], $result['unavailable']);
     }
 
@@ -116,4 +123,12 @@ class ShippingMethods
 
         return false;
     }
+
+	/**
+	 * @return array
+	 */
+	public function getAvailableShippingMethods()
+	{
+		return $this->availableShippingMethods;
+	}
 }

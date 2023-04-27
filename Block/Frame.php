@@ -5,6 +5,8 @@ namespace IWD\CheckoutConnector\Block;
 use Magento\Checkout\Block\Onepage as CheckoutOnepage;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Request\Http;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\Data\Form\FormKey;
 use Magento\Checkout\Model\CompositeConfigProvider;
@@ -86,6 +88,7 @@ class Frame extends CheckoutOnepage
         $this->helper = $helper;
         $this->request = $request;
         $this->jsonHelper = $jsonHelper;
+
         parent::__construct($context, $formKey, $configProvider, $layoutProcessors, $data);
     }
 
@@ -97,37 +100,32 @@ class Frame extends CheckoutOnepage
         return self::CHECKOUT_IFRAME_ID;
     }
 
-    /**
-     * @return string
-     */
+	/**
+	 * @return string
+	 * @throws LocalizedException
+	 * @throws NoSuchEntityException
+	 */
     public function getFrameUrl()
     {
-        $requestParams = $this->request->getParams();
+	    $requestParams = $this->request->getParams();
+	    $iframeParams  = $this->helper->getFrameParams($this->checkoutSession->getQuote());
 
-        $checkoutUrl = $this->helper->getCheckoutAppUrl();
-        $integrationApiKey = $this->helper->getIntegrationApiKey();
-        $quoteId = $this->checkoutSession->getQuote()->getId();
+	    if (isset($requestParams['paypal_order_id']) && $requestParams['paypal_order_id']) {
+		    $iframeParams['paypal_order_id'] = $requestParams['paypal_order_id'];
+	    }
 
-        $params = [
-            'api_key' => $integrationApiKey,
-            'quote_id' => $quoteId,
-            'customer_token' => $this->getCustomerToken(),
-            'customer_group' => $this->getCustomerGroup()
-        ];
+	    if (isset($requestParams['paypal_funding_source']) && $requestParams['paypal_funding_source']) {
+		    $iframeParams['paypal_funding_source'] = $requestParams['paypal_funding_source'];
+	    }
 
-        if(isset($requestParams['paypal_order_id']) && $requestParams['paypal_order_id']) {
-            $params['paypal_order_id'] = $requestParams['paypal_order_id'];
-        }
+	    if ($this->customerSession->isLoggedIn()) {
+		    $iframeParams['customer_token'] = $this->getCustomerToken();
+		    $iframeParams['customer_email'] = $this->customerSession->getCustomer()->getEmail();
+	    }
 
-        if(isset($requestParams['paypal_funding_source']) && $requestParams['paypal_funding_source']) {
-            $params['paypal_funding_source'] = $requestParams['paypal_funding_source'];
-        }
+	    $iframeParams['customer_group'] = $this->getCustomerGroup();
 
-        if($this->customerSession->isLoggedIn()) {
-            $params['customer_token'] = $this->getCustomerToken();
-        }
-
-        return $checkoutUrl . '?' . http_build_query($params);
+	    return $this->helper->getCheckoutAppUrl().'?'.http_build_query($iframeParams);
     }
 
     /**
@@ -218,5 +216,4 @@ class Frame extends CheckoutOnepage
 
         return '0';
     }
-
 }

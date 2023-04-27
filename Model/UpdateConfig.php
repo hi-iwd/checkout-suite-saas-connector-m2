@@ -16,6 +16,11 @@ use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflineMultiple;
 class UpdateConfig implements UpdateConfigInterface
 {
     /**
+     * @var array
+     */
+    public $allowEmptyFields = ['extra_details', 'instruction'];
+
+    /**
      * @var AccessValidator
      */
     private $accessValidator;
@@ -93,35 +98,35 @@ class UpdateConfig implements UpdateConfigInterface
                 switch ($gateway_type){
                     case 'check_or_money_order':
                         foreach ($gateway_settings as $k => $v){
-                            if(!empty($v)){
+                            if($this->isConfigValueValid($v, $k)) {
                                 $this->IWDCheckoutOfflinePayCheckmoConfigProvider->updateConfig(array($k => $v));
                             }
                         }
                         break;
                     case 'cash_on_delivery':
                         foreach ($gateway_settings as $k => $v){
-                            if(!empty($v)){
+                            if($this->isConfigValueValid($v, $k)) {
                                 $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->updateConfig(array($k => $v));
                             }
                         }
                         break;
                     case 'banktransfer':
                         foreach ($gateway_settings as $k => $v){
-                            if(!empty($v)){
+                            if($this->isConfigValueValid($v, $k)) {
                                 $this->IWDCheckoutOfflinePayBankTransferConfigProvider->updateConfig(array($k => $v));
                             }
                         }
                         break;
                     case 'purchaseorder':
                         foreach ($gateway_settings as $k => $v){
-                            if(!empty($v)){
+                            if($this->isConfigValueValid($v, $k)) {
                                 $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->updateConfig(array($k => $v));
                             }
                         }
                         break;
                     default:
                         foreach ($gateway_settings as $k => $v){
-                            if(!empty($v)){
+                            if($this->isConfigValueValid($v, $k)) {
                                 $this->IWDCheckoutOfflineMultiple->updateConfig(array($k => $v) , $gateway_type);
                             }
                         }
@@ -130,5 +135,9 @@ class UpdateConfig implements UpdateConfigInterface
         }
 
         return 'Success!';
+    }
+
+    public function isConfigValueValid($v, $k) {
+        return (!empty($v) || in_array($k,$this->allowEmptyFields));
     }
 }
