@@ -2,10 +2,14 @@
 
 namespace IWD\CheckoutConnector\Model;
 
+use Exception;
 use IWD\CheckoutConnector\Block\Checkout\CustomAddressData;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Newsletter\Model\Subscriber;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class CustomDataProvider
@@ -50,21 +54,37 @@ class CustomDataProvider
      */
     private $resultPageFactory;
 
+	/**
+	 * @var Subscriber
+	 */
+	private $subscriber;
+
+	/**
+	 * @var LoggerInterface
+	 */
+	private $logger;
+
     /**
      * CustomDataProvider constructor.
      *
      * @param CartRepositoryInterface $cartRepository
      * @param OrderRepositoryInterface $orderRepository
      * @param PageFactory $resultPageFactory
+     * @param Subscriber $subscriber
+     * @param LoggerInterface $logger
      */
     public function __construct(
         CartRepositoryInterface $cartRepository,
         OrderRepositoryInterface $orderRepository,
-        PageFactory $resultPageFactory
+        PageFactory $resultPageFactory,
+	    Subscriber $subscriber,
+	    LoggerInterface $logger
     ) {
-        $this->cartRepository = $cartRepository;
-        $this->orderRepository = $orderRepository;
-        $this->resultPageFactory = $resultPageFactory;
+	    $this->cartRepository    = $cartRepository;
+	    $this->orderRepository   = $orderRepository;
+	    $this->resultPageFactory = $resultPageFactory;
+	    $this->subscriber        = $subscriber;
+	    $this->logger            = $logger;
     }
 
     /**
@@ -153,4 +173,35 @@ class CustomDataProvider
 
         return $object;
     }
+
+	/**
+	 * Process Dominate Data
+	 *
+	 * @param $order OrderInterface
+	 * @param $data
+	 */
+	public function processDominateData($order, $data)
+	{
+		foreach ((array) $data as $key => $value) {
+			if ($key === 'subscribe_to_newsletter') {
+				$this->subscribeToNewsletter($order);
+			}
+		}
+	}
+
+	/**
+	 * @param $order OrderInterface
+	 */
+	private function subscribeToNewsletter($order)
+	{
+		try {
+			$currentCustomerId = $order->getCustomerId();
+
+			$currentCustomerId
+				? $this->subscriber->subscribeCustomerById($currentCustomerId)
+				: $this->subscriber->subscribe($order->getCustomerEmail());
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage());
+		}
+	}
 }

@@ -424,6 +424,11 @@ class Order implements OrderInterface
 		    if (isset($data['custom_data']['order']) && $data['custom_data']['order']) {
 			    $this->customDataProvider->saveDataToOrder($order, $data['custom_data']['order']);
 		    }
+
+		    // Process Dominate Data
+		    if (isset($data['custom_data']['dominate']) && $data['custom_data']['dominate']) {
+			    $this->customDataProvider->processDominateData($order, $data['custom_data']['dominate']);
+		    }
 	    }
     }
 

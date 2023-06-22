@@ -52,7 +52,7 @@ class PaymentMethod extends Column
             $options = $this->paymentHelper->getPaymentMethodList(true, true);
 
             foreach ($dataSource['data']['items'] as & $item) {
-                if ($this->getData('name') == 'iwd_checkout_pay') {
+                if ($this->getData('name') == 'iwd_checkout_pay' && isset($item['iwd_checkout_pay'])) {
                     $item[$this->getData('name')] = $item['iwd_checkout_pay'];
                 }
             }

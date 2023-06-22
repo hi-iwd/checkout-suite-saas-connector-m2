@@ -7,8 +7,10 @@ use Magento\Catalog\Helper\ImageFactory;
 use Magento\Directory\Model\Currency;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\BlockFactory;
+use Magento\Quote\Model\Quote;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Tax\Model\Config as TaxConfig;
 
 /**
  * Class CartItems
@@ -31,15 +33,36 @@ class CartItems
      * @var Currency
      */
     private $currency;
+
+    /**
+     * @var StoreManagerInterface
+     */
     protected $_storeManager;
+
+    /**
+     * @var Emulation
+     */
     protected $_appEmulation;
+
+    /**
+     * @var BlockFactory
+     */
     protected $_blockFactory;
+
+    /**
+     * @var TaxConfig
+     */
+    protected $taxConfig;
+
     /**
      * CartItems constructor.
-     *
      * @param ProductRepositoryInterfaceFactory $productRepository
      * @param ImageFactory $productImageHelper
      * @param Currency $currency
+     * @param StoreManagerInterface $storeManager
+     * @param BlockFactory $blockFactory
+     * @param Emulation $appEmulation
+     * @param TaxConfig $taxConfig
      */
     public function __construct(
         ProductRepositoryInterfaceFactory $productRepository,
@@ -47,7 +70,8 @@ class CartItems
         Currency $currency,
         StoreManagerInterface $storeManager,
         BlockFactory $blockFactory,
-        Emulation $appEmulation
+        Emulation $appEmulation,
+        TaxConfig $taxConfig
 
     ) {
         $this->productRepository = $productRepository;
@@ -56,15 +80,17 @@ class CartItems
         $this->_storeManager = $storeManager;
         $this->_blockFactory = $blockFactory;
         $this->_appEmulation = $appEmulation;
+        $this->taxConfig = $taxConfig;
     }
 
     /**
-     * @param $quote
+     * @param $quote Quote
      * @return array
      */
     public function getItems($quote)
     {
         $data = [];
+        $this->currency->load($quote->getQuoteCurrencyCode());
 
         foreach ($quote->getAllVisibleItems() as $index => $item) {
             $productData = $this->productRepository->create()->getById($item->getProductId());
@@ -76,22 +102,35 @@ class CartItems
 		                                             ->setImageFile($productData->getThumbnail())->getUrl();
 	        }
 
-            $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
-
-            $data[] = [
+	        $data[] = [
                 "name"    => $item->getName(),
                 "sku"     => $item->getSku(),
-                "price"   => number_format($item->getConvertedPrice(), 2, '.', ''),
+                "price"   => number_format($this->getItemPrice($item), 2, '.', ''),
                 "qty"     => $item->getQty(),
                 "item_id" => $item->getProductId(),
                 "type"    => $item->getProductType(),
                 "image"   => $imageUrl,
-                "options" => $this->getOptions($options),
+                "options" => $this->getOptions($item),
             ];
         }
 
         return $data;
     }
+
+	/**
+	 * @param $item Quote\Item
+	 *
+	 * @return mixed
+	 */
+	protected function getItemPrice($item)
+	{
+		if ($this->taxConfig->displayCartPricesInclTax($item->getStoreId())
+		    || $this->taxConfig->displayCartPricesBoth($item->getStoreId())) {
+			return $item->getPriceInclTax();
+		}
+
+		return $item->getConvertedPrice();
+	}
 
     /**
      * @param $product
@@ -111,13 +150,22 @@ class CartItems
         return $imageUrl;
     }
 
-    /**
-     * @param $options
-     * @return array
-     */
-    public function getOptions($options)
+	/**
+	 * @param $item Quote\Item
+	 *
+	 * @return array
+	 */
+    public function getOptions($item)
     {
         $product_options = [];
+	    $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+
+	    if ($this->taxConfig->displayCartPricesBoth($item->getStoreId())) {
+		    $product_options[] = [
+			    'label' => 'text.excl_tax',
+			    'value' => $this->currency->format($item->getConvertedPrice(), [], false)
+		    ];
+	    }
 
         if (!empty($options['attributes_info'])) {
             foreach ($options['attributes_info'] as $option) {
@@ -131,6 +179,7 @@ class CartItems
         if (!empty($options['bundle_options'])) {
             foreach ($options['bundle_options'] as $option) {
                 $value = '';
+
                 foreach ($option['value'] as $item) {
                     $value .= '(' . $item['qty'] . ') ' . $item['title'] . ' ' . $this->currency->format($item['price'], [], false);
                 }
