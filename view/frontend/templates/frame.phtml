@@ -43,7 +43,7 @@
                             location.reload(true);
                         }
                     }).fail(function () {
-                        let msg = '<?= __('Could not authenticate. Please try again later') ?>';
+                        let msg = "<?= __('Could not authenticate. Please try again later') ?>";
                         sendMessage(msg);
                     });
                 } else if (event.data.changeUrlAction === 'reset_pass') {

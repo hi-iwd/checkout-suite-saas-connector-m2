@@ -10,6 +10,10 @@ use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Customer\Model\AddressFactory;
+use Magento\Customer\Model\ResourceModel\Address;
+use IWD\CheckoutConnector\Helper\Order as OrderHelper;
 
 /**
  * Class CustomDataProvider
@@ -65,6 +69,26 @@ class CustomDataProvider
 	private $logger;
 
     /**
+     * @var CustomerFactory
+     */
+	private $customerFactory;
+
+    /**
+     * @var AddressFactory
+     */
+	private $addressFactory;
+
+    /**
+     * @var Address
+     */
+	private $addressResource;
+
+    /**
+     * @var OrderHelper
+     */
+	private $orderHelper;
+
+    /**
      * CustomDataProvider constructor.
      *
      * @param CartRepositoryInterface $cartRepository
@@ -78,13 +102,21 @@ class CustomDataProvider
         OrderRepositoryInterface $orderRepository,
         PageFactory $resultPageFactory,
 	    Subscriber $subscriber,
-	    LoggerInterface $logger
+	    LoggerInterface $logger,
+        CustomerFactory $customerFactory,
+        AddressFactory $addressFactory,
+        Address $addressResource,
+        OrderHelper $orderHelper
     ) {
 	    $this->cartRepository    = $cartRepository;
 	    $this->orderRepository   = $orderRepository;
 	    $this->resultPageFactory = $resultPageFactory;
 	    $this->subscriber        = $subscriber;
 	    $this->logger            = $logger;
+	    $this->customerFactory   = $customerFactory;
+	    $this->addressFactory    = $addressFactory;
+	    $this->addressResource   = $addressResource;
+	    $this->orderHelper       = $orderHelper;
     }
 
     /**
@@ -186,6 +218,9 @@ class CustomDataProvider
 			if ($key === 'subscribe_to_newsletter') {
 				$this->subscribeToNewsletter($order);
 			}
+            elseif ($key === 'create_customer_account') {
+                $this->createCustomerAccount($order);
+            }
 		}
 	}
 
@@ -204,4 +239,66 @@ class CustomDataProvider
 			$this->logger->error($e->getMessage());
 		}
 	}
+
+    /**
+     * @param $order
+     */
+	private function createCustomerAccount($order)
+    {
+        try {
+            if ($order->getCustomerId()) return;
+
+            $customer = $this->customerFactory->create();
+
+            $customer->setWebsiteId($order->getStore()->getWebsiteId());
+            $customer->setEmail($order->getCustomerEmail());
+            $customer->setFirstname($order->getCustomerFirstname() ? $order->getCustomerFirstname() : $order->getBillingAddress()->getFirstname());
+            $customer->setLastname($order->getCustomerLastname() ? $order->getCustomerLastname() : $order->getBillingAddress()->getLastname());
+
+            $customer->save();
+
+            $this->createCustomerAddress($customer, [$order->getBillingAddress(), $order->getShippingAddress()]);
+
+            $this->orderHelper->assignCustomerToOrder($order);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
+    }
+
+    /**
+     * @param $customer
+     * @param $addresses
+     *
+     * @return void
+     */
+    private function createCustomerAddress($customer, $addresses)
+    {
+        try {
+            foreach ($addresses as $address) {
+                if (empty($address) || empty($address->getData())) continue;
+
+                $customerAddress = $this->addressFactory->create();
+
+                $customerAddress->setCustomerId($customer->getId())
+                    ->setFirstname($address->getFirstname())
+                    ->setLastname($address->getLastname())
+                    ->setCountryId($address->getCountryId())
+                    ->setRegion($address->getRegion())
+                    ->setRegionId($address->getRegionId())
+                    ->setPostcode($address->getPostcode())
+                    ->setCity($address->getCity())
+                    ->setTelephone($address->getTelephone())
+                    ->setStreet($address->getStreet())
+                    ->setSaveInAddressBook('1');
+
+                $address->getAddressType() == 'billing'
+                    ? $customerAddress->setIsDefaultBilling('1')
+                    : $customerAddress->setIsDefaultShipping('1');
+
+                $this->addressResource->save($customerAddress);
+            }
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
+    }
 }

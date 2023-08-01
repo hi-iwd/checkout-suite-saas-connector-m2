@@ -29,7 +29,8 @@ class Data extends AbstractHelper
     const XML_PATH_INTEGRATION_API_SECRET = 'iwd_checkout_connector/general/integration_api_secret';
     const COUNTRY_CODE = 'general/country/default';
     const XML_PATH_SUBSCRIPTION_ENABLE = 'iwd_checkout_connector/general/enable_subscription';
-
+    const XML_PATH_NOTIFY_ENABLE = 'iwd_checkout_connector/notify/enable_notification';
+    const XML_PATH_NOTIFY_EMAIL = 'iwd_checkout_connector/notify/template';
     /**
      * @var Config
      */
@@ -261,4 +262,28 @@ class Data extends AbstractHelper
 			],
 		];
 	}
+
+    /**
+     * @return bool
+     */
+    public function isNotifyCustomer($storeId = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_NOTIFY_ENABLE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function notifyCustomerTemplate($storeId = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_NOTIFY_EMAIL,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
 }

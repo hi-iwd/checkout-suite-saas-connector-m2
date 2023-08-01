@@ -8,6 +8,9 @@
                 <enable_subscription>0</enable_subscription>
                 <integration_api_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
             </general>
+            <notify>
+                <template>iwd_checkout_connector_notify_template</template>
+            </notify>
         </iwd_checkout_connector>
         <payment>
             <iwd_checkout_pay>

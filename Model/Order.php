@@ -29,6 +29,7 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use IWD\CheckoutConnector\Model\Email\Sender;
 use Throwable;
 
 /**
@@ -154,8 +155,11 @@ class Order implements OrderInterface
     protected $quoteValidator;
 
     /**
-     * Order constructor.
-     *
+     * @var Sender
+     */
+    protected $emailSender;
+
+    /**
      * @param QuoteManagement $quoteManagement
      * @param OrderFactory $orderFactory
      * @param AccessValidator $accessValidator
@@ -177,6 +181,8 @@ class Order implements OrderInterface
      * @param Quote $quote
      * @param StoreManagerInterface $storeManager
      * @param CustomDataProvider $customDataProvider
+     * @param QuoteValidator $quoteValidator
+     * @param Sender $emailSender
      */
     public function __construct(
         QuoteManagement $quoteManagement,
@@ -200,7 +206,8 @@ class Order implements OrderInterface
         Quote $quote,
         StoreManagerInterface $storeManager,
         CustomDataProvider $customDataProvider,
-        QuoteValidator $quoteValidator
+        QuoteValidator $quoteValidator,
+        Sender $emailSender
     ) {
         $this->quoteManagement = $quoteManagement;
         $this->orderFactory = $orderFactory;
@@ -224,6 +231,7 @@ class Order implements OrderInterface
         $this->storeManager = $storeManager;
         $this->customDataProvider = $customDataProvider;
         $this->quoteValidator = $quoteValidator;
+        $this->emailSender = $emailSender;
     }
 
     /**
@@ -240,11 +248,12 @@ class Order implements OrderInterface
 
         $paymentCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
         $paymentTitle = $data['payment_method_title'];
+        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
 
         try {
-            $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
             $this->processOrderCreation($quote, $data, $paymentTitle);
         } catch (Throwable $e) {
+            $this->emailSender->sendEmail($quote, $data, $this->cartItems->getItems($quote));
             $this->orderCreationResult['error'] = 1;
             $this->orderCreationResult['error_message'] = $e->getMessage();
         }
@@ -268,11 +277,12 @@ class Order implements OrderInterface
         $paymentCode = $offlineConfigProvider->getPaymentMethodCode();
         $paymentTitle = $offlineConfigProvider->getTittle($data['payment_method_code']);
         $orderStatus = $offlineConfigProvider->getOrderStatus($data['payment_method_code']);
+        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
 
         try {
-            $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
             $this->processOrderCreation($quote, $data, $paymentTitle, $orderStatus);
         } catch (Throwable $e) {
+            $this->emailSender->sendEmail($quote, $data, $this->cartItems->getItems($quote));
             $this->orderCreationResult['error'] = 1;
             $this->orderCreationResult['error_message'] = $e->getMessage();
         }

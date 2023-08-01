@@ -101,6 +101,7 @@ class ApplyCoupon implements ApplyCouponInterface
         $this->storeManager->getStore($quote->getStoreId())
             ->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
 
+        $quote->getShippingAddress()->setCollectShippingRates(true);
         $quote->setCouponCode($coupon);
         $quote->collectTotals()->save();
 

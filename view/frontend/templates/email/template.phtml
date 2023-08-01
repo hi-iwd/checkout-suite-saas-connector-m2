@@ -1,0 +1,82 @@
+<?php
+$items = $block->getItems();
+$total = $block->getTotal();
+$shipping_price = $block->getShipping();
+?>
+
+<table style="border-collapse: collapse; width: 100%;">
+    <tbody>
+    <tr>
+        <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top">
+            <table style="width: 100%; border-collapse: collapse; border-spacing: 0; max-width: 100%">
+                <thead>
+                <tr>
+                    <th style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; text-align: left; vertical-align: bottom; padding: 10px">
+                        <?= __("Items") ?>
+                    </th>
+                    <th style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: bottom; padding: 10px; text-align: center">
+                        <?= __("Qty") ?>
+                    </th>
+                    <th style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: bottom; padding: 10px; text-align: right">
+                        <?= __("Price") ?>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if (is_array($items)) {
+                    foreach ($items as $item) {
+                        ?>
+                        <tr>
+                            <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; padding: 10px; border-top: 1px solid rgba(204, 204, 204, 1)">
+                                <p style="margin-top: 0; font-weight: 700; margin-bottom: 5px"><?= $item['name'] ?></p>
+                                <p style="margin-top: 0; margin-bottom: 10px"><?= __("SKU:") ?> <?= $item['sku'] ?></p>
+                                <dl style="margin-top: 0; margin-bottom: 0; padding-left: 20px">
+                                    <?php foreach ($item['options'] as $option) { ?>
+                                        <dt style="font-weight: 700; margin-top: 0; margin-bottom: 0; padding-bottom: 0">
+                                            <strong
+                                                    style="font-weight: 700"><em
+                                                        style="font-style: italic"><?= $option['label'] ?></em></strong>
+                                        </dt>
+                                        <dd style="margin-top: 0; margin-left: 0; margin-bottom: 0; padding-bottom: 0; padding-left: 10px">
+                                            <?= $option['value'] ?>
+                                        </dd>
+                                    <?php } ?>
+                                </dl>
+                            </td>
+                            <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; padding: 10px; border-top: 1px solid rgba(204, 204, 204, 1); text-align: center">
+                                <?= $item['qty'] ?>
+                            </td>
+                            <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; padding: 10px; border-top: 1px solid rgba(204, 204, 204, 1); text-align: right">
+                                <span> <?= $item['price'] ?></span>
+                            </td>
+                        </tr>
+                        <?php
+                    }
+                }
+                ?>
+                </tbody>
+                <tfoot>
+                <tr style="padding: 10px">
+                    <th colspan="2" scope="row"
+                        style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); font-weight: 400; padding: 10px 10px 10px; text-align: right">
+                        <?= __("Shipping") ?>
+                    </th>
+                    <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); padding: 10px 10px 10px; text-align: right">
+                        <span style="white-space: nowrap"><?= $shipping_price ?></span></td>
+                </tr>
+                <tr>
+                    <th colspan="2" scope="row"
+                        style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); font-weight: 400; padding: 10px 10px 10px; text-align: right">
+                        <strong style="font-weight: 700"><?= __("Grand Total") ?></strong>
+                    </th>
+                    <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); padding: 10px 10px 10px; text-align: right">
+                        <strong style="font-weight: 700"><span style="white-space: nowrap"><?= $total ?></span></strong>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </td>
+    </tr>
+    </tbody>
+</table>
