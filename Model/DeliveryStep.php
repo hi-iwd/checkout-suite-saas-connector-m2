@@ -8,7 +8,11 @@ use IWD\CheckoutConnector\Model\Api\FormatData;
 use IWD\CheckoutConnector\Model\Cart\CartItems;
 use IWD\CheckoutConnector\Model\Cart\CartTotals;
 use IWD\CheckoutConnector\Model\Quote\Quote;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Api\Data\CustomerInterfaceFactory;
+use Magento\Customer\Model\Group;
 use Magento\Directory\Model\CurrencyFactory;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Model\RegionFactory;
 
@@ -19,6 +23,16 @@ use Magento\Directory\Model\RegionFactory;
  */
 class DeliveryStep implements DeliveryStepInterface
 {
+	/**
+	 * @var CustomerRepositoryInterface
+	 */
+	private $customerRepository;
+
+	/**
+	 * @var CustomerInterfaceFactory
+	 */
+	private $customerDataFactory;
+
     /**
      * @var Cart\CartItems
      */
@@ -92,7 +106,9 @@ class DeliveryStep implements DeliveryStepInterface
         Quote $quote,
         CurrencyFactory $currencyFactory,
         StoreManagerInterface $storeManager,
-        RegionFactory $regionFactory
+        RegionFactory $regionFactory,
+	    CustomerRepositoryInterface $customerRepository,
+	    CustomerInterfaceFactory $customerDataFactory
     ) {
         $this->cartItems = $cartItems;
         $this->cartTotals = $cartTotals;
@@ -104,6 +120,8 @@ class DeliveryStep implements DeliveryStepInterface
         $this->currencyFactory = $currencyFactory;
         $this->storeManager = $storeManager;
         $this->regionFactory = $regionFactory;
+	    $this->customerRepository = $customerRepository;
+	    $this->customerDataFactory = $customerDataFactory;
     }
 
     /**
@@ -151,6 +169,13 @@ class DeliveryStep implements DeliveryStepInterface
             $quote->getShippingAddress()->addData($formattedAddressData['shipping']);
             $quote->getBillingAddress()->addData($formattedAddressData['billing']);
         }
+
+		if (!$quote->getCustomerId()) {
+			$quote->setCustomerGroupId(Group::NOT_LOGGED_IN_ID)
+		          ->setCustomerEmail($formattedAddressData['shipping']['email'])
+		          ->setCustomerFirstname($formattedAddressData['shipping']['firstname'])
+		          ->setCustomerLastname($formattedAddressData['shipping']['lastname']);
+		}
 
         // Pass Shipping Methods in response if Quote is not Virtual and if Shipping Address is set.
         if(!$quote->getIsVirtual() && $quote->getShippingAddress()->getCountryId()) {
