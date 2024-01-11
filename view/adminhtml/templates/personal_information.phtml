@@ -1,0 +1,22 @@
+<?php
+/**
+ * @var IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields $block
+ */
+?>
+<?php foreach ((array)$block->getPersonalDetails() as $label => $value) : ?>
+    <?php if (empty($value)) continue; ?>
+    <tr>
+        <th class="label"><?= $label ?? '' ?> </th>
+        <td>
+            <?php if (is_object($value)) {
+                foreach ($value as $optionLabel => $optionValue) {
+                    ?>
+                    <br> <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                    <?php
+                }
+            } else {
+                echo $value;
+            } ?>
+        </td>
+    </tr>
+<?php endforeach; ?>

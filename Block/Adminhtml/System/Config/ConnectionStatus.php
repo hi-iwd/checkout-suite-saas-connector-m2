@@ -42,7 +42,7 @@ class ConnectionStatus extends Field
         $connectionCheck = $this->apiAccessChecker->checkIsAllow();
 
         $message = ($connectionCheck)
-            ? '<b style="color:#059147; display: block;">' . __('Connection Successful') . '</b>'
+            ? '<b style="color:#059147; display: block;">' . __('Checkout is Successfully Connected!') . '</b>'
             : '<b style="color:#D40707; display: block;">' . $this->apiAccessChecker->getErrorMessage() . '</b>';
 
         $note = $this->apiAccessChecker->getHelpText();

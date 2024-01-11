@@ -151,8 +151,6 @@ class ApiAccessChecker extends AbstractHelper
             switch ($response['ErrorCode']) {
                 case 'wrong_api_credentials':
                     return 'Wrong Store API Credentials';
-                case 'not_configured_payments':
-                    return 'Not Configured Payments';
                 case 'wrong_website_url':
                     return 'Wrong Store Website URL';
                 case 'wrong_platform':
@@ -182,8 +180,6 @@ class ApiAccessChecker extends AbstractHelper
             switch ($response['ErrorCode']) {
                 case 'wrong_api_credentials':
                     return "We were unable to locate a Store with your Api Key & Secret. Please enter valid API Key & Secret from your $checkoutAdminUrl on our $iwdSiteUrl.";
-                case 'not_configured_payments':
-                    return "Your Payment Methods are not configured. Please go to your $checkoutAdminUrl on our $iwdSiteUrl and configure at least one Payment Method.";
                 case 'wrong_website_url':
                     return "Your current Site URL differs from the Website URL saved for your Store. Please go to your $checkoutAdminUrl on our $iwdSiteUrl and change Website URL value for your Store";
                 case 'wrong_platform':

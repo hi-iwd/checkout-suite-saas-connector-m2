@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_address_additional_fields" template="IWD_CheckoutConnector::address_information.phtml" >
+            <action method="setOrderInfoArea">
+                <argument name="label" xsi:type="string">shipment</argument>
+            </action>
+        </block>
+
+        <referenceBlock name="order_info">
+            <!--account info-->
+            <referenceContainer name="extra_customer_info">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_account_additional_fields" template="IWD_CheckoutConnector::personal_information.phtml">
+                    <action method="setOrderInfoArea">
+                        <argument name="label" xsi:type="string">shipment</argument>
+                    </action>
+                </block>
+            </referenceContainer>
+            <!--  payment information -->
+            <referenceContainer name="extra_shipment_info">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" before="inventory_shipment" name="dominate_payment_additional_fields" template="IWD_CheckoutConnector::payment_information.phtml" >
+                    <action method="setOrderInfoArea">
+                        <argument name="label" xsi:type="string">shipment</argument>
+                    </action>
+                </block>
+            </referenceContainer>
+            <!--  total information -->
+            <referenceContainer name="submit_before">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" after="+" name="dominate_total_additional_fields_ship2" template="IWD_CheckoutConnector::shipment_total_information.phtml" >
+                    <action method="setOrderInfoArea">
+                        <argument name="label" xsi:type="string">shipment</argument>
+                    </action>
+                </block>
+            </referenceContainer>
+        </referenceBlock>
+    </body>
+</page>

@@ -1,0 +1,25 @@
+<?php
+/**
+ * @var Magento\Sales\Block\Adminhtml\Order\Totals\Item $block
+ */
+
+$order = $block->getOrder();
+$data = json_decode($order->getDominateAdditionalFields() ?? '', true);
+if (!isset($data['order_summary'])) return;
+foreach ((array)$data['order_summary'] as $label => $value) :?>
+    <?php if (empty($value)) continue; ?>
+    <tr>
+        <td class="label"><?= $label ?? '' ?> </td>
+        <td>
+            <?php if (is_array($value)) {
+                foreach ($value as $optionLabel => $optionValue) {
+                    ?>
+                     <span><?= $optionLabel ?>: </span><span><?= $optionValue == 'on' ? 'checked' : '' ?></span><br>
+                    <?php
+                }
+            } else {
+                echo $value;
+            } ?>
+        </td>
+    </tr>
+<?php endforeach; ?>

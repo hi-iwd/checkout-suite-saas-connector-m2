@@ -175,4 +175,12 @@
     <type name="Magento\Shipping\Model\Shipping">
         <plugin name="hide_subscription_shipping_methods" type="IWD\CheckoutConnector\Plugin\Shipping\HideShippingPlugin"/>
     </type>
+
+    <type name="Magento\Sales\Block\Adminhtml\Order\View\Info">
+        <plugin name="iwd_additional_fields_block_add" type="IWD\CheckoutConnector\Plugin\Block\Adminhtml\SalesOrderViewInfo" sortOrder="10" />
+    </type>
+
+    <type name="Magento\Sales\Block\Items\AbstractItems">
+        <plugin name="iwd_additional_fields_block_add_to_email" type="IWD\CheckoutConnector\Block\Order\Plugin\OrderEmail" />
+    </type>
 </config>

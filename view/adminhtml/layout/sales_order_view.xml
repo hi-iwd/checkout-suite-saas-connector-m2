@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_address_additional_fields" template="IWD_CheckoutConnector::address_information.phtml" />
+
+        <referenceBlock name="order_info">
+            <!--account info-->
+            <referenceContainer name="extra_customer_info">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_account_additional_fields" template="IWD_CheckoutConnector::personal_information.phtml"/>
+            </referenceContainer>
+            <!--  payment information -->
+            <referenceBlock name="order_additional_info">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_payment_additional_fields" template="IWD_CheckoutConnector::payment_information.phtml"/>
+            </referenceBlock>
+            <!--  total information -->
+            <referenceBlock name="order_totals">
+                <block class="Magento\Sales\Block\Adminhtml\Order\Totals\Item" name="dominate_total_additional_fields" template="IWD_CheckoutConnector::total_information.phtml" />
+            </referenceBlock>
+        </referenceBlock>
+    </body>
+</page>

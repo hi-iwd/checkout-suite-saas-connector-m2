@@ -29,4 +29,12 @@
             <column name="sku"/>
         </index>
     </table>
+
+    <table name="sales_order" resource="sales" engine="innodb" comment="Sales Order">
+        <column xsi:type="text" name="dominate_additional_fields" nullable="true"  comment="IWD Additional Fields"/>
+    </table>
+
+    <table name="quote" resource="checkout" engine="innodb" comment="Quote">
+        <column xsi:type="text" name="dominate_additional_fields" nullable="true"  comment="IWD Additional Fields"/>
+    </table>
 </schema>

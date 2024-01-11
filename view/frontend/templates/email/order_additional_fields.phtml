@@ -1,0 +1,44 @@
+<?php
+/**
+ * @var IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields $block
+ */
+?>
+<?php if ($AllAdditionalFields = $block->getAdditionalFields()): ?>
+    <table class="email-items">
+        <thead>
+        <tr>
+            <th class="item-info" colspan="2">
+                <?= __('Additional Fields Information:') ?>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($AllAdditionalFields as $additionalFields): ?>
+           <?php if (empty($additionalFields)) continue; ?>
+
+            <?php foreach ($additionalFields as $fieldLabel => $fieldValue): ?>
+            <?php if (empty($fieldValue)) continue; ?>
+            <tr>
+                <td valign="top"><label><?= $block->escapeHtml(__($fieldLabel ?? '')); ?></label></td>
+                <td style="width: 300px;" >
+                    <?php if (is_object($fieldValue)): ?>
+                        <?php foreach ($fieldValue as $optionLabel => $optionValue): ?>
+                        <div>
+                            <div style="display: inline-block;max-width: 76%; vertical-align: top;"><?=$optionLabel?></div>
+                            <div style="display: inline-block;max-width: 23%; vertical-align: top;" >: <b><?= $block->parseOption($optionValue) ?></b></div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <?= $fieldValue; ?>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+        <tr>
+            <td colspan="2"></td>
+        </tr>
+        </tbody>
+    </table>
+<?php endif; ?>
+

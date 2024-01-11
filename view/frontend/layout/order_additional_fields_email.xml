@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd" label="Email Order Items List" design_abstraction="custom">
+    <body>
+        <referenceBlock name="items">
+            <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="iwd_order_additional_fields" template="IWD_CheckoutConnector::email/order_additional_fields.phtml" >
+                <action method="setOrderInfoArea">
+                    <argument name="label" xsi:type="string">email</argument>
+                </action>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

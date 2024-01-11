@@ -206,6 +206,17 @@ class CustomDataProvider
         return $object;
     }
 
+    /**
+     * @param $quote
+     * @param $data
+     * @return void
+     */
+    public function setAdditionalFieldsToQuote($quote, $data)
+    {
+        $quote->setDominateAdditionalFields(json_encode($data));
+        $quote->save();
+    }
+
 	/**
 	 * Process Dominate Data
 	 *

@@ -1,0 +1,48 @@
+<?php
+/**
+ * @var IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields $block
+ */
+?>
+<div class="admin__page-section-content" style="margin-top: -30px;margin-bottom: 40px;">
+    <div class="admin__page-section-item order-billing-address">
+        <?php foreach ((array)$block->getBillingInformation() as $label => $value) : ?>
+            <?php if(empty($value)) continue; ?>
+            <div>
+                <?php if(!empty($label)): ?>
+                     <span><b><?= $label ?? '' ?>: </b></span>
+                <?php endif; ?>
+                <span>
+                    <?php if (is_object($value)) {
+                        foreach ($value as $optionLabel => $optionValue) {
+                            ?>
+                            <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                            <?php
+                        }
+                    } else {
+                        echo '<span>' . $value . '</span>';
+                    } ?>
+                </span>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <div class="admin__page-section-item order-shipping-address">
+        <?php foreach ((array)$block->getShippingInformation() as $label => $value) : ?>
+            <?php if(empty($value)) continue; ?>
+            <div>
+                <?php if(!empty($label)) ?>
+                    <span><b><?= $label ?? '' ?>: </b></span>
+                <span>
+                    <?php if (is_object($value)) {
+                        foreach ($value as $optionLabel => $optionValue) {
+                            ?>
+                            <br> <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                            <?php
+                        }
+                    } else {
+                        echo '<span>' . $value . '</span>';
+                    } ?>
+                </span>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>

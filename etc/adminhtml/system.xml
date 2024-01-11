@@ -58,6 +58,7 @@
                 <field id="connection_status" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="1">
                     <label>Connection Status</label>
                     <frontend_model>IWD\CheckoutConnector\Block\Adminhtml\System\Config\ConnectionStatus</frontend_model>
+                    <comment><![CDATA[Check to make sure your payment methods are configured within Dominate's Checkout Admin Panel to continue using]]></comment>
                 </field>
             </group>
             <group id="notify" translate="label" type="text"  sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">

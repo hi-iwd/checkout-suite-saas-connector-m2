@@ -1,0 +1,64 @@
+<?php
+/**
+ * @var IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields $block
+ */
+?>
+<div class="admin__page-section-content dominate-additional-data" style="margin-top: -30px;margin-bottom: 40px;">
+    <div class="admin__page-section-item order-billing-address">
+        <?php foreach ((array)$block->getPaymentMethods() as $label => $value) : ?>
+            <?php if (empty($value)) continue; ?>
+            <div>
+                <?php if (!empty($label)): ?>
+                    <span><b><?= $label ?>: </b></span>
+                <?php endif; ?>
+
+                <?php if (is_object($value)) {
+
+                    foreach ($value as $optionLabel => $optionValue) {
+                        ?>
+                        <p style="margin: 0"><b><?= $optionLabel ?>: </b><?= $block->parseOption($optionValue) ?></p>
+                        <?php
+                    }
+                } else {
+                    echo '<span>' . $value . '</span>';
+                } ?>
+
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <div class="admin__page-section-item order-shipping-address">
+        <?php foreach ((array)$block->getShippingMethods() as $label => $value) : ?>
+            <?php if (empty($value)) continue; ?>
+            <div>
+                <?php if (!empty($label)): ?>
+                    <span><b><?= $label ?>: </b></span>
+                <?php endif; ?>
+
+                <?php if (is_object($value)) {
+                    foreach ($value as $optionLabel => $optionValue) {
+                        ?>
+                        <p style="margin: 0"><b><?= $optionLabel ?>: </b><?= $block->parseOption($optionValue) ?></p>
+                        <?php
+                    }
+                } else {
+                    echo '<span>' . $value . '</span>';
+                } ?>
+
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php if ($block->isInvoiceViewPage() || $block->isRefundViewPage()) { ?>
+    <script>
+        require([
+            "jquery"
+        ], function (jQuery) {
+            jQuery(document).ready(function () {
+                let additionalBlock = '.dominate-additional-data';
+                jQuery(additionalBlock).insertAfter(".order-view-billing-shipping");
+                jQuery(additionalBlock).insertBefore("#creditmemo_items_container");
+                jQuery(additionalBlock).insertBefore("#creditmemo_item_container");
+            });
+        });
+    </script>
+<?php } ?>

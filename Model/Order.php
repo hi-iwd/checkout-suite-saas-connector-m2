@@ -373,6 +373,10 @@ class Order implements OrderInterface
             // Do nothing, continue create order process
         }
 
+        if (isset($data['custom_data']['dominate']['additional']) && $data['custom_data']['dominate']['additional']) {
+            $this->customDataProvider->setAdditionalFieldsToQuote($quote, $data['custom_data']['dominate']['additional']);
+        }
+
 	    // Create Order From Quote
 	    $order = $this->quoteManagement->submit($quote);
 

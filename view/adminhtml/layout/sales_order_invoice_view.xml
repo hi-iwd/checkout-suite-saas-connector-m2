@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+
+        <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_address_additional_fields" template="IWD_CheckoutConnector::address_information.phtml" >
+            <action method="setOrderInfoArea">
+                <argument name="label" xsi:type="string">invoice</argument>
+            </action>
+        </block>
+        <referenceBlock name="sales_invoice_view">
+            <!--account info-->
+            <referenceContainer name="extra_customer_info">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_account_additional_fields" template="IWD_CheckoutConnector::personal_information.phtml">
+                    <action method="setOrderInfoArea">
+                        <argument name="label" xsi:type="string">invoice</argument>
+                    </action>
+                </block>
+            </referenceContainer>
+            <!--  payment information -->
+            <referenceBlock name="order_item_extra_info">
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" name="dominate_payment_additional_fields" template="IWD_CheckoutConnector::payment_information.phtml">
+                    <action method="setOrderInfoArea">
+                        <argument name="label" xsi:type="string">invoice</argument>
+                    </action>
+                </block>
+            </referenceBlock>
+            <!--  total information -->
+            <referenceBlock name="invoice_totals">
+                <block class="Magento\Sales\Block\Adminhtml\Order\Totals\Item" name="dominate_total_additional_fields" template="IWD_CheckoutConnector::total_information.phtml" >
+                    <action method="setOrderInfoArea">
+                        <argument name="label" xsi:type="string">invoice</argument>
+                    </action>
+                </block>
+            </referenceBlock>
+        </referenceBlock>
+    </body>
+</page>

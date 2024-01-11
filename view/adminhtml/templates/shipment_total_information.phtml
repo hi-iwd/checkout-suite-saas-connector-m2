@@ -1,0 +1,47 @@
+<?php
+/**
+ * @var Magento\Sales\Block\Adminhtml\Order\Totals\Item $block
+ */
+
+$order = $block->getOrder();
+$data = json_decode($order->getDominateAdditionalFields() ?? '', true);
+if (!isset($data['order_summary'])) return;
+?>
+<div class="additional_total_section" style="margin-top: 20px;margin-bottom: 20px;">
+    <div class="admin__page-section-item-title">
+        <span class="title"><?= __('Additional Total Information') ?></span>
+    </div>
+    <div class="admin__page-section-item ">
+        <?php foreach ((array)$data['order_summary'] as $label => $value) : ?>
+            <?php if (empty($value)) continue; ?>
+
+            <div>
+                <?php if(!empty($label)): ?>
+                    <span><b><?= $label ?? '' ?>: </b></span>
+                <?php endif; ?>
+                <span>
+                    <?php if (is_array($value)) {
+                        foreach ($value as $optionLabel => $optionValue) {
+                            ?>
+                            <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                            <?php
+                        }
+                    } else {
+                        echo '<span>' . $value . '</span>';
+                    } ?>
+                </span>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<script>
+    require([
+        "jquery"
+    ], function (jQuery) {
+        jQuery(document).ready(function () {
+            let additionalBlock = '.additional_total_section';
+            jQuery(additionalBlock).insertBefore(".order-comments-history");
+        });
+    });
+</script>
+

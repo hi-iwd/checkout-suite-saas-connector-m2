@@ -188,6 +188,8 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
      */
     public function getGrandTotalAmount()
     {
+	    if (!$this->getQuote()->getBaseGrandTotal()) return 0;
+
         return number_format($this->getQuote()->getBaseGrandTotal(),2,'.', '');
     }
 
