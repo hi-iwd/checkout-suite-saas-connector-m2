@@ -3,209 +3,209 @@
 namespace IWD\CheckoutConnector\Model\Ui;
 
 use IWD\CheckoutConnector\Helper\Data as Helper;
-use IWD\CheckoutConnector\Model\CacheCleanerFlag;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Math\Random;
 use Magento\Payment\Gateway\Config\Config;
-use Magento\Quote\Model\Quote;
 
 /**
  * Class IWDCheckoutPayConfigProvider
  */
 class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
 {
-    const CODE = 'iwd_checkout_pay';
-    const CONTAINER = 'iwd-checkout-pay-container';
+	const CODE = 'iwd_checkout_pay';
+	const CONTAINER = 'iwd-checkout-pay-container';
 
-    /**
-     * @var Random
-     */
-    private $random;
+	/**
+	 * @var Random
+	 */
+	private $random;
 
-    /**
-     * @var Config
-     */
-    private $config;
+	/**
+	 * @var Config
+	 */
+	private $config;
 
-    /**
-     * @var CheckoutSession
-     */
-    private $checkoutSession;
+	/**
+	 * @var CheckoutSession
+	 */
+	private $helper;
 
-    /**
-     * @var CheckoutSession
-     */
-    private $helper;
+	/**
+	 * @var ScopeConfigInterface
+	 */
+	protected $scopeConfig;
 
-    /**
-     * @var ScopeConfigInterface
-     */
-    protected $scopeConfig;
+	/**
+	 * @var WriterInterface
+	 */
+	protected $configWriter;
 
-    /**
-     *  @var WriterInterface
-     */
-    protected $configWriter;
+	/**
+	 * Constructor
+	 *
+	 * @param CheckoutSession      $checkoutSession
+	 * @param Config               $config
+	 * @param Random               $random
+	 * @param Helper               $helper
+	 * @param ScopeConfigInterface $scopeConfig
+	 * @param WriterInterface      $configWriter
+	 */
+	public function __construct(
+		Config $config,
+		Random $random,
+		Helper $helper,
+		ScopeConfigInterface $scopeConfig,
+		WriterInterface $configWriter
+	) {
+		$this->config       = $config;
+		$this->random       = $random;
+		$this->helper       = $helper;
+		$this->scopeConfig  = $scopeConfig;
+		$this->configWriter = $configWriter;
+	}
 
-    /**
-     * @var CacheCleanerFlag
-     */
-    private $cacheCleanerFlag;
+	/**
+	 * Retrieve assoc array of checkout configuration
+	 *
+	 * @return array
+	 */
+	public function getConfig()
+	{
+		return [
+			'payment' => [
+				self::CODE => [
+					'label'       => $this->config->getValue('label'),
+					'description' => $this->config->getValue('description'),
+				],
+			],
+		];
+	}
 
-    /**
-     * Constructor
-     *
-     * @param CheckoutSession $checkoutSession
-     * @param Config $config
-     * @param Random $random
-     * @param Helper $helper
-     * @param ScopeConfigInterface $scopeConfig
-     * @param WriterInterface $configWriter
-     * @param CacheCleanerFlag $cacheCleanerFlag
-     */
-    public function __construct(
-        CheckoutSession $checkoutSession,
-        Config $config,
-        Random $random,
-        Helper $helper,
-        ScopeConfigInterface $scopeConfig,
-        WriterInterface $configWriter,
-        CacheCleanerFlag $cacheCleanerFlag
-    ) {
-        $this->checkoutSession = $checkoutSession;
-        $this->config = $config;
-        $this->random = $random;
-        $this->helper = $helper;
-        $this->scopeConfig = $scopeConfig;
-        $this->configWriter = $configWriter;
-        $this->cacheCleanerFlag = $cacheCleanerFlag;
-    }
+	/**
+	 * @param $containerId
+	 *
+	 * @return array
+	 * @throws NoSuchEntityException
+	 */
+	public function getButtonConfig($containerId)
+	{
+		return [
+			'containerId'       => $containerId,
+			'checkoutIframeId'  => $this->helper->getCheckoutIframeId(),
+			'checkoutPageUrl'   => $this->helper->getCheckoutPageUrl(),
+			'successActionUrl'  => $this->helper->getActionSuccess(),
+			'dominateApiKey'    => $this->helper->getIntegrationApiKey(),
+			'dominateAppUrl'    => $this->helper->getAppUrl(),
+			'customerToken'     => $this->helper->getCustomerToken(),
+			'quoteId'           => $this->helper->getQuoteId(),
+			'maskedQuoteId'     => $this->helper->getMaskedQuoteId(),
+			'isVirtual'         => $this->helper->isQuoteVirtual(),
+			'displayName'       => $this->helper->getMerchantName(),
+			'isLoggedIn'        => $this->helper->isCustomerLoggedIn(),
+			'isCheckoutAllowed' => $this->helper->isCheckoutAllowed(),
+			'isCheckoutPage'    => $this->helper->isCheckoutPage(),
+			'storeCode'         => $this->helper->getStoreCode(),
+			'currencyCode'      => $this->helper->getCurrencyCode(),
+			'grandTotalAmount'  => $this->helper->getGrandTotalAmount(),
+			'btnShape'          => $this->getConfigData('btn_shape'),
+			'btnColor'          => $this->getConfigData('btn_color'),
+			'creditStatus'      => (bool) $this->getConfigData('paypal_credit_status'),
+			'venmoStatus'       => (bool) $this->getConfigData('paypal_venmo_status'),
+			'applepayStatus'    => (bool) $this->getConfigData('paypal_applepay_status'),
+		];
+	}
 
-    /**
-     * Retrieve assoc array of checkout configuration
-     *
-     * @return array
-     */
-    public function getConfig()
-    {
-        return [
-            'payment' => [
-                self::CODE => [
-                    'label' => $this->config->getValue('label'),
-                    'description' => $this->config->getValue('description')
-                ]
-            ]
-        ];
-    }
+	/**
+	 * @param $configs
+	 */
+	public function updateConfig($configs)
+	{
+		foreach ($configs as $configCode => $configValue) {
+			$this->setConfigData($configCode, $configValue);
+		}
+	}
 
+	/**
+	 * @return string
+	 */
+	public function getPaymentMethodCode()
+	{
+		return self::CODE;
+	}
 
-    /**
-     * @param $containerId
-     * @return array
-     */
-    public function getButtonConfig($containerId)
-    {
-        return [
-            'containerId' => $containerId,
-            'checkoutPageUrl' => $this->helper->getCheckoutPageUrl(),
-            'grandTotalAmount' => $this->getGrandTotalAmount(),
-            'btnShape' => $this->getConfigData('btn_shape'),
-            'btnColor' => $this->getConfigData('btn_color'),
-            'creditStatus' => $this->getConfigData('paypal_credit_status'),
-            'venmoStatus' => $this->getConfigData('paypal_venmo_status')
-        ];
-    }
+	/**
+	 * @param $config
+	 *
+	 * @return string
+	 */
+	public function getConfigPath($config)
+	{
+		return 'payment/'.self::CODE.'/'.$config;
+	}
 
-    /**
-     * @param $configs
-     */
-    public function updateConfig($configs) {
-        foreach($configs as $configCode => $configValue) {
-            $this->setConfigData($configCode, $configValue);
-        }
+	/**
+	 * @param $config
+	 *
+	 * @return string
+	 */
+	public function getConfigData($config)
+	{
+		return $this->scopeConfig->getValue($this->getConfigPath($config));
+	}
 
-        $this->cacheCleanerFlag->addFlag();
-    }
+	/**
+	 * @param $config
+	 * @param $value
+	 */
+	public function setConfigData($config, $value)
+	{
+		$this->configWriter->save($this->getConfigPath($config), $value, ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0);
+	}
 
-    /**
-     * @return string
-     */
-    public function getPaymentMethodCode()
-    {
-        return self::CODE;
-    }
+	/**
+	 * @return string
+	 * @throws LocalizedException
+	 */
+	public function getGeneratedContainerId()
+	{
+		return self::CONTAINER.$this->random->getRandomNumber();
+	}
 
-    /**
-     * @param $config
-     * @return string
-     */
-    public function getConfigPath($config)
-    {
-        return 'payment/' . self::CODE . '/' . $config;
-    }
+	/**
+	 * @return string
+	 */
+	public function getCurrencyCode()
+	{
+		return $this->helper->getCurrencyCode();
+	}
 
-    /**
-     * @param $config
-     * @return string
-     */
-    public function getConfigData($config)
-    {
-        return $this->scopeConfig->getValue($this->getConfigPath($config));
-    }
+	/**
+	 * @return string
+	 */
+	public function getGrandTotalAmount()
+	{
+		return $this->helper->getGrandTotalAmount();
+	}
 
-    /**
-     * @param $config
-     * @param $value
-     */
-    public function setConfigData($config, $value)
-    {
-        $this->configWriter->save($this->getConfigPath($config),  $value, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0);
-    }
+	/**
+	 * @return string
+	 */
+	public function getTittle()
+	{
+		return $this->getConfigData('title');
+	}
 
-    /**
-     * @return string
-     * @throws LocalizedException
-     */
-    public function getGeneratedContainerId()
-    {
-        return self::CONTAINER . $this->random->getRandomNumber();
-    }
+	/**
+	 * @return string
+	 */
+	public function getOrderStatus()
+	{
+		return $this->getConfigData('order_status');
+	}
 
-    /**
-     * @return Quote
-     */
-    public function getQuote()
-    {
-        return $this->checkoutSession->getQuote();
-    }
-
-    /**
-     * @return string
-     */
-    public function getGrandTotalAmount()
-    {
-	    if (!$this->getQuote()->getBaseGrandTotal()) return 0;
-
-        return number_format($this->getQuote()->getBaseGrandTotal(),2,'.', '');
-    }
-
-    /**
-     * @return string
-     */
-    public function getCurrencyCode()
-    {
-        return $this->getQuote()->getBaseCurrencyCode();
-    }
-
-    public function getTittle(){
-        return $this->getConfigData('title');
-    }
-
-    public function getOrderStatus(){
-        return $this->getConfigData('order_status');
-    }
 }

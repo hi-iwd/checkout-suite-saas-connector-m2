@@ -30,7 +30,7 @@ define([
                         "client-id": _self.config.client_id,
                         "commit": "false",
                         "intent": "authorize",
-                        "components": "buttons,messages",
+                        "components": "buttons,messages,applepay",
                         "vault": "false",
                         "enable-funding": "paylater,venmo",
                         "merchant-id": _self.config.merchant_id,

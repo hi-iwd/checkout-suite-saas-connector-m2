@@ -1,4 +1,5 @@
 <?php
+
 namespace IWD\CheckoutConnector\Model;
 
 use IWD\CheckoutConnector\Api\UpdateConfigInterface;
@@ -8,136 +9,162 @@ use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayCashOnDeliveryConfigProv
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayBankTransferConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
 use IWD\CheckoutConnector\Model\Ui\IWDCheckoutOfflineMultiple;
+use IWD\CheckoutConnector\Helper\CacheCleaner as CacheCleanerHelper;
 
 /**
  * Class UpdateConfig
+ *
  * @package IWD\CheckoutConnector\Model
  */
 class UpdateConfig implements UpdateConfigInterface
 {
-    /**
-     * @var array
-     */
-    public $allowEmptyFields = ['extra_details', 'instruction'];
 
-    /**
-     * @var AccessValidator
-     */
-    private $accessValidator;
+	/**
+	 * @var array
+	 */
+	public $allowEmptyFields = ['extra_details', 'instruction'];
 
-    /**
-     * @var IWDCheckoutPayConfigProvider
-     */
-    private $IWDCheckoutPayConfigProvider;
+	/**
+	 * @var AccessValidator
+	 */
+	private $accessValidator;
 
-    /**
-     * @var IWDCheckoutOfflinePayCheckmoConfigProvider
-     */
-    private $IWDCheckoutOfflinePayCheckmoConfigProvider;
+	/**
+	 * @var IWDCheckoutPayConfigProvider
+	 */
+	private $IWDCheckoutPayConfigProvider;
 
-    /**
-     * @var IWDCheckoutOfflinePayCashOnDeliveryConfigProvider
-     */
-    private $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+	/**
+	 * @var IWDCheckoutOfflinePayCheckmoConfigProvider
+	 */
+	private $IWDCheckoutOfflinePayCheckmoConfigProvider;
 
-    /**
-     * @var IWDCheckoutOfflinePayBankTransferConfigProvider
-     */
-    private $IWDCheckoutOfflinePayBankTransferConfigProvider;
+	/**
+	 * @var IWDCheckoutOfflinePayCashOnDeliveryConfigProvider
+	 */
+	private $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
 
-    /**
-     * @var IWDCheckoutOfflinePayPurchaseOrderConfigProvider
-     */
-    private $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
-    /**
-     * @var IWDCheckoutOfflineMultiple
-     */
-    private $IWDCheckoutOfflineMultiple;
+	/**
+	 * @var IWDCheckoutOfflinePayBankTransferConfigProvider
+	 */
+	private $IWDCheckoutOfflinePayBankTransferConfigProvider;
 
-    /**
-     * UpdateConfig constructor.
-     *
-     * @param AccessValidator $accessValidator
-     * @param IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider
-     */
-    public function __construct(
-        AccessValidator $accessValidator,
-        IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
-        IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider,
-        IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider,
-        IWDCheckoutOfflinePayBankTransferConfigProvider $IWDCheckoutOfflinePayBankTransferConfigProvider,
-        IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
-        IWDCheckoutOfflineMultiple $IWDCheckoutOfflineMultiple
-    ) {
-        $this->accessValidator = $accessValidator;
-        $this->IWDCheckoutPayConfigProvider = $IWDCheckoutPayConfigProvider;
-        $this->IWDCheckoutOfflinePayCheckmoConfigProvider = $IWDCheckoutOfflinePayCheckmoConfigProvider;
-        $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider = $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
-        $this->IWDCheckoutOfflinePayBankTransferConfigProvider = $IWDCheckoutOfflinePayBankTransferConfigProvider;
-        $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider = $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
-        $this->IWDCheckoutOfflineMultiple = $IWDCheckoutOfflineMultiple;
-    }
+	/**
+	 * @var IWDCheckoutOfflinePayPurchaseOrderConfigProvider
+	 */
+	private $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
 
-    /**
-     * @param mixed $access_tokens
-     * @param mixed $data
-     * @return mixed[]|string
-     */
-    public function updateConfig($access_tokens, $data)
-    {
-        if(!$this->accessValidator->checkAccess($access_tokens)) {
-            return 'Permissions Denied!';
-        }
+	/**
+	 * @var IWDCheckoutOfflineMultiple
+	 */
+	private $IWDCheckoutOfflineMultiple;
 
-        if(isset($data['paypal']) && $data['paypal']) {
-            $this->IWDCheckoutPayConfigProvider->updateConfig($data['paypal']);
-        }
+	/**
+	 * @var CacheCleanerHelper
+	 */
+	private $cacheCleanerHelper;
 
-        if(isset($data['offline_payments']) && $data['offline_payments']) {
-            foreach ($data['offline_payments'] as $gateway_type => $gateway_settings){
-                switch ($gateway_type){
-                    case 'check_or_money_order':
-                        foreach ($gateway_settings as $k => $v){
-                            if($this->isConfigValueValid($v, $k)) {
-                                $this->IWDCheckoutOfflinePayCheckmoConfigProvider->updateConfig(array($k => $v));
-                            }
-                        }
-                        break;
-                    case 'cash_on_delivery':
-                        foreach ($gateway_settings as $k => $v){
-                            if($this->isConfigValueValid($v, $k)) {
-                                $this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->updateConfig(array($k => $v));
-                            }
-                        }
-                        break;
-                    case 'banktransfer':
-                        foreach ($gateway_settings as $k => $v){
-                            if($this->isConfigValueValid($v, $k)) {
-                                $this->IWDCheckoutOfflinePayBankTransferConfigProvider->updateConfig(array($k => $v));
-                            }
-                        }
-                        break;
-                    case 'purchaseorder':
-                        foreach ($gateway_settings as $k => $v){
-                            if($this->isConfigValueValid($v, $k)) {
-                                $this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->updateConfig(array($k => $v));
-                            }
-                        }
-                        break;
-                    default:
-                        foreach ($gateway_settings as $k => $v){
-                            if($this->isConfigValueValid($v, $k)) {
-                                $this->IWDCheckoutOfflineMultiple->updateConfig(array($k => $v) , $gateway_type);
-                            }
-                        }
-                }
-            }
-        }
+	/**
+	 * @param AccessValidator                                   $accessValidator
+	 * @param IWDCheckoutPayConfigProvider                      $IWDCheckoutPayConfigProvider
+	 * @param IWDCheckoutOfflinePayCheckmoConfigProvider        $IWDCheckoutOfflinePayCheckmoConfigProvider
+	 * @param IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider
+	 * @param IWDCheckoutOfflinePayBankTransferConfigProvider   $IWDCheckoutOfflinePayBankTransferConfigProvider
+	 * @param IWDCheckoutOfflinePayPurchaseOrderConfigProvider  $IWDCheckoutOfflinePayPurchaseOrderConfigProvider
+	 * @param IWDCheckoutOfflineMultiple                        $IWDCheckoutOfflineMultiple
+	 * @param CacheCleanerHelper                                $cacheCleanerHelper
+	 */
+	public function __construct(
+		AccessValidator $accessValidator,
+		IWDCheckoutPayConfigProvider $IWDCheckoutPayConfigProvider,
+		IWDCheckoutOfflinePayCheckmoConfigProvider $IWDCheckoutOfflinePayCheckmoConfigProvider,
+		IWDCheckoutOfflinePayCashOnDeliveryConfigProvider $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider,
+		IWDCheckoutOfflinePayBankTransferConfigProvider $IWDCheckoutOfflinePayBankTransferConfigProvider,
+		IWDCheckoutOfflinePayPurchaseOrderConfigProvider $IWDCheckoutOfflinePayPurchaseOrderConfigProvider,
+		IWDCheckoutOfflineMultiple $IWDCheckoutOfflineMultiple,
+		CacheCleanerHelper $cacheCleanerHelper
+	) {
+		$this->accessValidator                                   = $accessValidator;
+		$this->IWDCheckoutPayConfigProvider                      = $IWDCheckoutPayConfigProvider;
+		$this->IWDCheckoutOfflinePayCheckmoConfigProvider        = $IWDCheckoutOfflinePayCheckmoConfigProvider;
+		$this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider = $IWDCheckoutOfflinePayCashOnDeliveryConfigProvider;
+		$this->IWDCheckoutOfflinePayBankTransferConfigProvider   = $IWDCheckoutOfflinePayBankTransferConfigProvider;
+		$this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider  = $IWDCheckoutOfflinePayPurchaseOrderConfigProvider;
+		$this->IWDCheckoutOfflineMultiple                        = $IWDCheckoutOfflineMultiple;
+		$this->cacheCleanerHelper                                = $cacheCleanerHelper;
+	}
 
-        return 'Success!';
-    }
+	/**
+	 * @param mixed $access_tokens
+	 * @param mixed $data
+	 *
+	 * @return mixed[]|string
+	 */
+	public function updateConfig($access_tokens, $data)
+	{
+		if (!$this->accessValidator->checkAccess($access_tokens)) {
+			return 'Permissions Denied!';
+		}
 
-    public function isConfigValueValid($v, $k) {
-        return (!empty($v) || in_array($k,$this->allowEmptyFields));
-    }
+		if (isset($data['paypal']) && $data['paypal']) {
+			$this->IWDCheckoutPayConfigProvider->updateConfig($data['paypal']);
+		}
+
+		if (isset($data['offline_payments']) && $data['offline_payments']) {
+			foreach ($data['offline_payments'] as $gateway_type => $gateway_settings) {
+				switch ($gateway_type) {
+					case 'check_or_money_order':
+						foreach ($gateway_settings as $k => $v) {
+							if ($this->isConfigValueValid($v, $k)) {
+								$this->IWDCheckoutOfflinePayCheckmoConfigProvider->updateConfig([$k => $v]);
+							}
+						}
+						break;
+					case 'cash_on_delivery':
+						foreach ($gateway_settings as $k => $v) {
+							if ($this->isConfigValueValid($v, $k)) {
+								$this->IWDCheckoutOfflinePayCashOnDeliveryConfigProvider->updateConfig([$k => $v]);
+							}
+						}
+						break;
+					case 'banktransfer':
+						foreach ($gateway_settings as $k => $v) {
+							if ($this->isConfigValueValid($v, $k)) {
+								$this->IWDCheckoutOfflinePayBankTransferConfigProvider->updateConfig([$k => $v]);
+							}
+						}
+						break;
+					case 'purchaseorder':
+						foreach ($gateway_settings as $k => $v) {
+							if ($this->isConfigValueValid($v, $k)) {
+								$this->IWDCheckoutOfflinePayPurchaseOrderConfigProvider->updateConfig([$k => $v]);
+							}
+						}
+						break;
+					default:
+						foreach ($gateway_settings as $k => $v) {
+							if ($this->isConfigValueValid($v, $k)) {
+								$this->IWDCheckoutOfflineMultiple->updateConfig([$k => $v], $gateway_type);
+							}
+						}
+				}
+			}
+		}
+
+		$this->cacheCleanerHelper->flushCache();
+
+		return 'Success!';
+	}
+
+	/**
+	 * @param $v
+	 * @param $k
+	 *
+	 * @return bool
+	 */
+	public function isConfigValueValid($v, $k)
+	{
+		return (!empty($v) || in_array($k, $this->allowEmptyFields));
+	}
+
 }

@@ -5,14 +5,20 @@ namespace IWD\CheckoutConnector\Helper;
 use IWD\CheckoutConnector\Model\Address\Addresses;
 use IWD\CheckoutConnector\Model\Address\ShippingMethods;
 use IWD\CheckoutConnector\Model\Cart\CartTotals;
+use Magento\Checkout\Helper\Data as CheckoutHelper;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Config\Model\ResourceModel\Config;
+use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Integration\Model\Oauth\TokenFactory;
 
 /**
  * Class Data
@@ -22,6 +28,7 @@ use Magento\Store\Model\ScopeInterface;
 class Data extends AbstractHelper
 {
     const PLATFORM = 'Magento2';
+	const IWD_CHECKOUT_IFRAME_ID = 'iwd_checkout_iframe';
     const IWD_CHECKOUT_PAGE_PATH = 'checkout_page';
     const IWD_CHECKOUT_APP_URL = 'https://checkout.iwdagency.com/';
     const XML_PATH_ENABLE = 'iwd_checkout_connector/general/enable';
@@ -62,11 +69,49 @@ class Data extends AbstractHelper
 	private $address;
 
 	/**
-	 * @param  Context  $context
-	 * @param  Config  $resourceConfig
-	 * @param  StoreManagerInterface  $storeManager
-	 * @param  UrlInterface  $url
-	 * @param  CartTotals  $cartTotals
+	 * @var CustomerSession
+	 */
+	private $customerSession;
+
+	/**
+	 * @var CheckoutSession
+	 */
+	private $checkoutSession;
+
+	/**
+	 * @var QuoteIdMaskFactory
+	 */
+	private $quoteIdMaskFactory;
+
+	/**
+	 * @var TokenFactory
+	 */
+	private $tokenModelFactory;
+
+	/**
+	 * @var Http
+	 */
+	protected $httpRequest;
+
+	/**
+	 * @var CheckoutHelper
+	 */
+	private $checkoutHelper;
+
+	/**
+	 * @param Context               $context
+	 * @param Config                $resourceConfig
+	 * @param StoreManagerInterface $storeManager
+	 * @param UrlInterface          $url
+	 * @param CartTotals            $cartTotals
+	 * @param ShippingMethods       $shippingMethods
+	 * @param Addresses             $address
+	 * @param CustomerSession       $customerSession
+	 * @param CheckoutSession       $checkoutSession
+	 * @param QuoteIdMaskFactory    $quoteIdMaskFactory
+	 * @param TokenFactory          $tokenModelFactory
+	 * @param Http                  $httpRequest
+	 * @param CheckoutHelper        $checkoutHelper
 	 */
 	public function __construct(
 		Context $context,
@@ -75,14 +120,26 @@ class Data extends AbstractHelper
 		UrlInterface $url,
 		CartTotals $cartTotals,
 		ShippingMethods $shippingMethods,
-		Addresses $address
+		Addresses $address,
+		CustomerSession $customerSession,
+		CheckoutSession $checkoutSession,
+		QuoteIdMaskFactory $quoteIdMaskFactory,
+		TokenFactory $tokenModelFactory,
+		Http $httpRequest,
+		CheckoutHelper $checkoutHelper
 	) {
-		$this->resourceConfig  = $resourceConfig;
-		$this->storeManager    = $storeManager;
-		$this->url             = $url;
-		$this->cartTotals      = $cartTotals;
-		$this->shippingMethods = $shippingMethods;
-		$this->address         = $address;
+		$this->resourceConfig     = $resourceConfig;
+		$this->storeManager       = $storeManager;
+		$this->url                = $url;
+		$this->cartTotals         = $cartTotals;
+		$this->shippingMethods    = $shippingMethods;
+		$this->address            = $address;
+		$this->customerSession    = $customerSession;
+		$this->checkoutSession    = $checkoutSession;
+		$this->quoteIdMaskFactory = $quoteIdMaskFactory;
+		$this->tokenModelFactory  = $tokenModelFactory;
+		$this->httpRequest        = $httpRequest;
+		$this->checkoutHelper     = $checkoutHelper;
 
 		parent::__construct($context);
 	}
@@ -147,6 +204,14 @@ class Data extends AbstractHelper
     {
         return $this->url->getUrl($this->getCheckoutPagePath());
     }
+
+	/**
+	 * @return string
+	 */
+	public static function getCheckoutIframeId()
+	{
+		return self::IWD_CHECKOUT_IFRAME_ID;
+	}
 
     /**
      * @return string
@@ -286,4 +351,124 @@ class Data extends AbstractHelper
             $storeId
         );
     }
+
+	/**
+	 * @return mixed
+	 */
+	public function getCustomerToken()
+	{
+		if ($this->customerSession->isLoggedIn()) {
+			$customerId    = $this->customerSession->getCustomer()->getId();
+			$customerToken = $this->tokenModelFactory->create();
+
+			return $customerToken->createCustomerToken($customerId)->getToken();
+		}
+
+		return 'empty';
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getQuoteId()
+	{
+		return $this->getQuote()->getId();
+	}
+
+	/**
+	 * @return Quote
+	 */
+	public function getQuote()
+	{
+		return $this->checkoutSession->getQuote();
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function isQuoteVirtual()
+	{
+		return $this->getQuote()->isVirtual();
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function isCheckoutPage()
+	{
+		return $this->httpRequest->getFullActionName() === self::IWD_CHECKOUT_PAGE_PATH.'_index_index';
+	}
+
+	/**
+	 * @return string
+	 * @throws NoSuchEntityException
+	 */
+	public function getStoreCode()
+	{
+		return $this->storeManager->getStore()->getCode();
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getMaskedQuoteId()
+	{
+		$quoteId = $this->getQuoteId();
+		$quoteIdMask = $this->quoteIdMaskFactory->create()->load($quoteId, 'quote_id');
+
+		return $quoteIdMask->getMaskedId();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getGrandTotalAmount()
+	{
+		if (!$this->getQuote()->getBaseGrandTotal()) return 0;
+
+		return number_format($this->getQuote()->getBaseGrandTotal(),2,'.', '');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCurrencyCode()
+	{
+		return $this->getQuote()->getBaseCurrencyCode();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getActionSuccess()
+	{
+		return $this->url->getUrl('checkout_page/index/success');
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCustomerLoggedIn()
+	{
+		return (bool)$this->customerSession->isLoggedIn();
+	}
+
+	/**
+	 * @return string
+	 * @throws NoSuchEntityException
+	 */
+	public function getMerchantName()
+	{
+		return $this->storeManager->getStore()->getName();
+	}
+
+	/**
+	 * Check if guest checkout is allowed
+	 *
+	 * @return bool
+	 */
+	public function isCheckoutAllowed()
+	{
+		return $this->customerSession->isLoggedIn() || $this->checkoutHelper->isAllowedGuestCheckout($this->getQuote());
+	}
 }

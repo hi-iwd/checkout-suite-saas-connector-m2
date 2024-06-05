@@ -40,7 +40,9 @@ class AdditionalFields extends \Magento\Backend\Block\Template
      */
     public function getAdditionalFields()
     {
-        return json_decode($this->getOrder()->getDominateAdditionalFields() ?? '');
+        $additionalFields = ($this->getOrder() && $this->getOrder()->getDominateAdditionalFields())
+            ? $this->getOrder()->getDominateAdditionalFields() : '';
+        return json_decode($additionalFields);
     }
 
     /**

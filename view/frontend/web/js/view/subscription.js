@@ -75,7 +75,7 @@ define([
                         "client-id": btnInfo.client_id,
                         "commit": "false",
                         "intent": "capture",
-                        "components": "buttons,messages",
+                        "components": "buttons,messages,applepay",
                         "vault": "true",
                         "merchant-id": btnInfo.merchant_id,
                         "data-partner-attribution-id": btnInfo.partner_attribution_id

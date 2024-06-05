@@ -14,44 +14,47 @@ use Magento\Framework\App\Cache\Frontend\Pool;
  */
 class CacheCleaner extends AbstractHelper
 {
-    /**
-     * @var TypeListInterface
-     */
-    protected $cacheTypeList;
 
-    /**
-     * @var Pool
-     */
-    protected $cacheFrontendPool;
+	/**
+	 * @var TypeListInterface
+	 */
+	protected $cacheTypeList;
 
-    /**
-     * CacheCleaner constructor.
-     *
-     * @param Context $context
-     * @param TypeListInterface $cacheTypeList
-     * @param Pool $cacheFrontendPool
-     */
-    public function __construct(
-        Context $context,
-        TypeListInterface $cacheTypeList,
-        Pool $cacheFrontendPool
-    ) {
-        $this->cacheTypeList = $cacheTypeList;
-        $this->cacheFrontendPool = $cacheFrontendPool;
-        parent::__construct($context);
-    }
+	/**
+	 * @var Pool
+	 */
+	protected $cacheFrontendPool;
 
-    public function flushCache()
-    {
-        $_types = [
-            'block_html'
-        ];
+	/**
+	 * CacheCleaner constructor.
+	 *
+	 * @param Context           $context
+	 * @param TypeListInterface $cacheTypeList
+	 * @param Pool              $cacheFrontendPool
+	 */
+	public function __construct(
+		Context $context,
+		TypeListInterface $cacheTypeList,
+		Pool $cacheFrontendPool
+	) {
+		$this->cacheTypeList     = $cacheTypeList;
+		$this->cacheFrontendPool = $cacheFrontendPool;
+		parent::__construct($context);
+	}
 
-        foreach ($_types as $type) {
-            $this->cacheTypeList->cleanType($type);
-        }
-        foreach ($this->cacheFrontendPool as $cacheFrontend) {
-            $cacheFrontend->getBackend()->clean();
-        }
-    }
+	public function flushCache()
+	{
+		$_types = [
+			'config',
+			'block_html',
+		];
+
+		foreach ($_types as $type) {
+			$this->cacheTypeList->cleanType($type);
+		}
+		foreach ($this->cacheFrontendPool as $cacheFrontend) {
+			$cacheFrontend->getBackend()->clean();
+		}
+	}
+
 }

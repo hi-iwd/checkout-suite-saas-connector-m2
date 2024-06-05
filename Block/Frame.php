@@ -12,7 +12,6 @@ use Magento\Framework\Data\Form\FormKey;
 use Magento\Checkout\Model\CompositeConfigProvider;
 use IWD\CheckoutConnector\Helper\Data;
 use Magento\Customer\Model\Session as CustomerSession;
-use Magento\Integration\Model\Oauth\TokenFactory;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
 
 /**
@@ -23,7 +22,6 @@ use Magento\Framework\Json\Helper\Data as JsonHelper;
 class Frame extends CheckoutOnepage
 {
     const CMS_TYPE = 'Magento2';
-    const CHECKOUT_IFRAME_ID = 'iwd_checkout_iframe';
 
     /**
      * @var CheckoutSession
@@ -39,11 +37,6 @@ class Frame extends CheckoutOnepage
      * @var CustomerSession
      */
     private $customerSession;
-
-    /**
-     * @var TokenFactory
-     */
-    private $tokenModelFactory;
 
     /**
      * @var Http
@@ -63,7 +56,6 @@ class Frame extends CheckoutOnepage
      * @param CompositeConfigProvider $configProvider
      * @param CheckoutSession $checkoutSession
      * @param CustomerSession $customerSession
-     * @param TokenFactory $tokenModelFactory
      * @param Data $helper
      * @param Http $request
      * @param array $layoutProcessors
@@ -75,7 +67,6 @@ class Frame extends CheckoutOnepage
         CompositeConfigProvider $configProvider,
         CheckoutSession $checkoutSession,
         CustomerSession $customerSession,
-        TokenFactory $tokenModelFactory,
         Data $helper,
         Http $request,
         JsonHelper $jsonHelper,
@@ -84,7 +75,6 @@ class Frame extends CheckoutOnepage
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
-        $this->tokenModelFactory = $tokenModelFactory;
         $this->helper = $helper;
         $this->request = $request;
         $this->jsonHelper = $jsonHelper;
@@ -97,7 +87,7 @@ class Frame extends CheckoutOnepage
      */
     public function getCheckoutIframeId()
     {
-        return self::CHECKOUT_IFRAME_ID;
+        return $this->helper->getCheckoutIframeId();
     }
 
 	/**
@@ -119,28 +109,13 @@ class Frame extends CheckoutOnepage
 	    }
 
 	    if ($this->customerSession->isLoggedIn()) {
-		    $iframeParams['customer_token'] = $this->getCustomerToken();
+		    $iframeParams['customer_token'] = $this->helper->getCustomerToken();
 		    $iframeParams['customer_email'] = $this->customerSession->getCustomer()->getEmail();
 	    }
 
 	    $iframeParams['customer_group'] = $this->getCustomerGroup();
 
 	    return $this->helper->getCheckoutAppUrl().'?'.http_build_query($iframeParams);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCustomerToken()
-    {
-        if($this->customerSession->isLoggedIn()) {
-            $customerId = $this->customerSession->getCustomer()->getId();
-            $customerToken = $this->tokenModelFactory->create();
-
-            return $customerToken->createCustomerToken($customerId)->getToken();
-        }
-
-        return 'empty';
     }
 
     /**
@@ -165,7 +140,7 @@ class Frame extends CheckoutOnepage
     private function getIframeConfig()
     {
         return [
-            'checkoutIframeId' => $this->getCheckoutIframeId(),
+            'checkoutIframeId' => $this->helper->getCheckoutIframeId(),
             'editCartUrl'      => $this->getEditCartUrl(),
             'loginUrl'         => $this->getLoginUrl(),
             'resetPasswordUrl' => $this->getResetPasswordUrl(),

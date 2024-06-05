@@ -2,9 +2,9 @@
 
 namespace IWD\CheckoutConnector\ViewModel;
 
+use IWD\CheckoutConnector\Helper\Data;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
-use IWD\CheckoutConnector\Block\Frame;
 
 /**
  * Class BraintreeApplePay
@@ -47,7 +47,7 @@ class BraintreeApplePay implements ArgumentInterface
     private function getConfig(): array
     {
         return [
-            'checkoutIframeId' => Frame::CHECKOUT_IFRAME_ID,
+            'checkoutIframeId' => Data::IWD_CHECKOUT_IFRAME_ID,
         ];
     }
 }

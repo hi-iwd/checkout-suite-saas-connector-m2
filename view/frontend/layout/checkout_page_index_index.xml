@@ -12,6 +12,9 @@
                     <argument name="view_model" xsi:type="object">IWD\CheckoutConnector\ViewModel\BraintreeApplePay</argument>
                 </arguments>
             </block>
+            <block class="IWD\CheckoutConnector\Block\Shortcut\PayPalButton" name="iwd.paypal.button"
+                   template="IWD_CheckoutConnector::shortcut/iwd_paypal_button.phtml"
+                   ifconfig="iwd_checkout_connector/general/enable"/>
         </referenceContainer>
         <referenceBlock name="checkout.root">
             <action method="setTemplate">

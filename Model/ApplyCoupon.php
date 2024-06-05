@@ -109,7 +109,7 @@ class ApplyCoupon implements ApplyCouponInterface
         $response['cart']       = $this->cartTotals->getTotals($quote);
 
         if ($quote->getCouponCode() != $data['coupon_code']) {
-            $response['error'] = 'The coupon code "' . $data['coupon_code'] . '" is not valid.';
+            $response['error'] = __('The coupon code "%1" is not valid.', $data['coupon_code']);
         }
 
         return $response;

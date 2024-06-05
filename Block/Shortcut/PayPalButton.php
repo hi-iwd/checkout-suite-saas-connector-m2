@@ -97,30 +97,42 @@ class PayPalButton extends Template implements ShortcutInterface
     /**
      * @return string
      */
-    public function getPayPalBnCode() {
+    public function getPayPalBnCode()
+    {
         return $this->configProvider->getConfigData('bn_code');
     }
 
     /**
      * @return string
      */
-    public function getPaypalStatus(){
+    public function getPaypalStatus()
+    {
         return $this->configProvider->getConfigData('status');
     }
 
     /**
      * @return string
      */
-    public function getPaypalCreditStatus(){
+    public function getPaypalCreditStatus()
+    {
         return $this->configProvider->getConfigData('paypal_credit_status');
     }
 
     /**
      * @return string
      */
-    public function getPaypalVenmoStatus(){
+    public function getPayPalVenmoStatus()
+    {
         return $this->configProvider->getConfigData('paypal_venmo_status');
     }
+
+	/**
+	 * @return string
+	 */
+	public function getPayPalApplePayStatus()
+	{
+		return $this->configProvider->getConfigData('paypal_applepay_status');
+	}
 
     /**
      * @return string
@@ -154,14 +166,14 @@ class PayPalButton extends Template implements ShortcutInterface
     {
         $enableFunding = [];
 
-        if($this->getPaypalVenmoStatus() === '1') {
-            $enableFunding[] = 'venmo';
-        }
-        if($this->getPaypalCreditStatus() === '1') {
-            $enableFunding[] = 'paylater';
-        }
+	    if ($this->getPayPalVenmoStatus() === '1') {
+		    $enableFunding[] = 'venmo';
+	    }
+	    if ($this->getPayPalCreditStatus() === '1') {
+		    $enableFunding[] = 'paylater';
+	    }
 
-        return implode(",", $enableFunding);
+	    return implode(",", $enableFunding);
     }
 
     /**
@@ -175,7 +187,9 @@ class PayPalButton extends Template implements ShortcutInterface
         $config = $this->configProvider->getButtonConfig($containerId);
 
         $implementationArray = [
-            'IWD_CheckoutConnector/js/view/payment/shortcut/iwd_paypal_button' => $config
+            'IWD_CheckoutConnector/js/view/payment/shortcut/iwd_paypal_button' => [
+				'config' => $config
+            ]
         ];
 
         return $this->jsonHelper->jsonEncode($implementationArray);
