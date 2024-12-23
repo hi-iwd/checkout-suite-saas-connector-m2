@@ -3,5 +3,6 @@
 
 $viewModel = $block->getViewModel();
 ?>
-
-<div data-mage-init='<?= $viewModel->getBtnConfiguration(); ?>' class="iwd-paypal-product-credit-ms"></div>
+<?php if($viewModel->isPayPalEnabled()): ?>
+    <div data-mage-init='<?= $viewModel->getBtnConfiguration(); ?>' class="iwd-paypal-product-credit-ms"></div>
+<?php endif; ?>

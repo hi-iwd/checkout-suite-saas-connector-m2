@@ -102,16 +102,21 @@ class CartItems
 		                                             ->setImageFile($productData->getThumbnail())->getUrl();
 	        }
 
-	        $data[] = [
-                "name"    => $item->getName(),
-                "sku"     => $item->getSku(),
-                "price"   => number_format($this->getItemPrice($item), 2, '.', ''),
-                "qty"     => $item->getQty(),
+            $data[] = [
+                "name" => $item->getName(),
+                "sku" => $item->getSku(),
+                "description" => $productData->getDescription(),
+                "url" => $productData->getProductUrl(),
+                "price" => number_format($this->getItemPrice($item), 2, '.', ''),
+                "qty" => $item->getQty(),
                 "item_id" => $item->getProductId(),
-                "type"    => $item->getProductType(),
-                "image"   => $imageUrl,
+                "type" => $item->getProductType(),
+                "image" => $imageUrl,
                 "options" => $this->getOptions($item),
+                "upc_type" => $productData->getDominateUpcType(),
+                "upc_code" => $productData->getDominateUpcCode(),
             ];
+
         }
 
         return $data;

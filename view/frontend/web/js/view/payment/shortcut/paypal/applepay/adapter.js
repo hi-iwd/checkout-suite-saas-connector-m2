@@ -1,12 +1,15 @@
 define(
     [
         'jquery',
+        'IWD_CheckoutConnector/js/view/payment/shortcut/paypal/global_helper',
         'IWD_CheckoutConnector/js/view/payment/shortcut/paypal/applepay/helper',
         'mage/storage',
         'mage/translate',
+        'dominateApplePay',
     ],
     function (
         $,
+        globalHelper,
         helper,
         storage,
         $t
@@ -23,7 +26,7 @@ define(
             paymentData: null,
             shippingAddress: null,
             billingAddress: null,
-            shippingMethodCode: null,
+            chosenShippingMethodCode: null,
             checkoutData: null,
             checkoutType: 'express',
             shippingMethods: {},
@@ -114,9 +117,9 @@ define(
             },
 
             /**
-             * Renders the Apple Pay button.
+             * Renders the Apple Pay button on the website by inserting it into the designated containers.
              *
-             * @function renderButton
+             * @function renderWebsiteExpressPaymentButton
              */
             renderWebsiteExpressPaymentButton: function() {
                 let buttonClass = 'dominate-paypal-applepay-btn';
@@ -148,7 +151,7 @@ define(
                 }
 
                 // Get All Available Regions from Magento
-                helper.getAvailableRegions();
+                globalHelper.getAvailableRegions();
 
                 try {
                     this.session = new ApplePaySession(4, helper.getPaymentRequest(this.paymentData, this.config, this.checkoutType));
@@ -192,55 +195,6 @@ define(
             },
 
             /**
-             * Constructs API URL based on user session and specific endpoint.
-             *
-             * @param endpoint The specific API endpoint to append to the base URL.
-             * @returns The full API URL as a string.
-             */
-            getApiUrl: function (endpoint) {
-                const baseUrl = `rest/${this.config.storeCode}/V1/`;
-                const cartPath = this.config.isLoggedIn ? 'carts/mine/' : `guest-carts/${this.config.maskedQuoteId}/`;
-
-                return `${baseUrl}${cartPath}${endpoint}`;
-            },
-
-            /**
-             * Prepares API address info based on the context.
-             *
-             * @param apiType The type of API call being made.
-             * @returns The formatted address information for the API call.
-             */
-            getApiAddressInfo: function (apiType) {
-                let addressInfo = {};
-
-                switch (apiType) {
-                    case 'estimate-shipping-methods':
-                        addressInfo = helper.getEstimateShippingMethodsObject(this.shippingAddress);
-                        break;
-                    case 'totals-information':
-                        addressInfo = helper.getTotalsInfoObject(this.shippingAddress);
-                        break;
-                    case 'shipping-information':
-                        addressInfo = helper.getShippingInfoObject(this.shippingAddress, this.billingAddress);
-                        break;
-                    case 'billing-address':
-                        addressInfo = helper.getBillingInfoObject(this.shippingAddress, this.billingAddress);
-                        break;
-                }
-
-                if (apiType !== 'estimate-shipping-methods' && this.shippingMethodCode) {
-                    let shippingMethod = this.shippingMethods[this.shippingMethodCode];
-
-                    if (shippingMethod) {
-                        addressInfo['addressInformation']['shipping_method_code'] = shippingMethod.method_code;
-                        addressInfo['addressInformation']['shipping_carrier_code'] = shippingMethod.carrier_code;
-                    }
-                }
-
-                return JSON.stringify(addressInfo);
-            },
-
-            /**
              * Handles selection of a shipping address in the Apple Pay sheet and fetches available shipping methods.
              *
              * @param event The event object containing the shipping contact selected by the user.
@@ -250,8 +204,8 @@ define(
 
                 try {
                     const shippingMethodsResponse = await storage.post(
-                        this.getApiUrl('estimate-shipping-methods'),
-                        this.getApiAddressInfo('estimate-shipping-methods')
+                        globalHelper.getApiUrl('estimate-shipping-methods', this.config),
+                        globalHelper.getApiAddressInfo('estimate-shipping-methods', this)
                     );
 
                     const shippingData = helper.getFormattedShippingMethods(shippingMethodsResponse);
@@ -264,7 +218,7 @@ define(
                     }
 
                     this.shippingMethods = shippingData.shippingMethodsDataObject;
-                    this.shippingMethodCode = shippingMethods[0].identifier;
+                    this.chosenShippingMethodCode = shippingMethods[0].identifier;
 
                     await this.updateShippingMethods(shippingMethods);
                 } catch (error) {
@@ -283,8 +237,8 @@ define(
                 try {
                     // Fetch updated totals based on the selected shipping method
                     const updatedTotalsResponse = await storage.post(
-                        this.getApiUrl('totals-information'),
-                        this.getApiAddressInfo('totals-information')
+                        globalHelper.getApiUrl('totals-information', this.config),
+                        globalHelper.getApiAddressInfo('totals-information', this)
                     );
 
                     this.session.completeShippingContactSelection(
@@ -292,7 +246,7 @@ define(
                         shippingMethods,
                         {
                             label: this.config.displayName,
-                            amount: helper.formatPrice(updatedTotalsResponse.base_grand_total)
+                            amount: globalHelper.formatPrice(updatedTotalsResponse.base_grand_total)
                         },
                         helper.getTotalsArray(updatedTotalsResponse)
                     );
@@ -309,19 +263,19 @@ define(
              * @param event The event object containing the shipping method selected by the user.
              */
             selectShippingMethod: async function (event) {
-                this.shippingMethodCode = event.shippingMethod.identifier;
+                this.chosenShippingMethodCode = event.shippingMethod.identifier;
 
                 try {
                     const totalsResponse = await storage.post(
-                        this.getApiUrl('totals-information'),
-                        this.getApiAddressInfo('totals-information')
+                        globalHelper.getApiUrl('totals-information', this.config),
+                        globalHelper.getApiAddressInfo('totals-information', this)
                     );
 
                     this.session.completeShippingMethodSelection(
                         ApplePaySession.STATUS_SUCCESS,
                         {
                             label: this.config.displayName,
-                            amount: helper.formatPrice(totalsResponse.base_grand_total)
+                            amount: globalHelper.formatPrice(totalsResponse.base_grand_total)
                         },
                         helper.getTotalsArray(totalsResponse)
                     );
@@ -347,13 +301,16 @@ define(
                         const apiMethodType = this.config.isVirtual ? 'billing-address' : 'shipping-information';
 
                         // Set shipping or billing address
-                        await storage.post(this.getApiUrl(apiMethodType), this.getApiAddressInfo(apiMethodType));
+                        await storage.post(
+                            globalHelper.getApiUrl(apiMethodType, this.config),
+                            globalHelper.getApiAddressInfo(apiMethodType, this)
+                        );
                     }
 
                     // Initiate order creation
-                    const createOrderData = await helper.fetchJson(
+                    const createOrderData = await globalHelper.fetchJson(
                         `${this.config.dominateAppUrl}checkout/payment/paypal/order-create`,
-                        helper.getOrderCreateRequest(this.config)
+                        globalHelper.getOrderCreateRequest(this.config, 'apple_pay')
                     );
 
                     if ('status' in createOrderData && createOrderData.status === 'error') {
@@ -369,9 +326,9 @@ define(
                     });
 
                     // Final approval
-                    const approvalData = await helper.fetchJson(
+                    const approvalData = await globalHelper.fetchJson(
                         `${this.config.dominateAppUrl}checkout/payment/paypal/handle-approve`,
-                        helper.getHandleApproveRequest(this.config, createOrderData, this.checkoutData)
+                        globalHelper.getHandleApproveRequest(this.config, createOrderData, this.checkoutData, 'apple_pay')
                     );
 
                     this.handleOrderCreationResponse(approvalData);
@@ -394,7 +351,7 @@ define(
                 }
 
                 this.session.completePayment(ApplePaySession.STATUS_SUCCESS);
-                helper.redirectToSuccessPage(this.config.successActionUrl, response);
+                globalHelper.redirectToSuccessPage(this.config.successActionUrl, response);
             },
 
             /**
@@ -405,7 +362,7 @@ define(
              * @return {void}
              */
             handleOrderCreationError: function (error) {
-                const errorMessage = helper.formatErrorMessage(error.message);
+                const errorMessage = globalHelper.formatErrorMessage(error.message);
 
                 console.error('Order Creation Error:', errorMessage);
                 this.session.completePayment(ApplePaySession.STATUS_FAILURE);

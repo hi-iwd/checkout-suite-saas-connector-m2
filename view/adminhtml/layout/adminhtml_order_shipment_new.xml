@@ -27,7 +27,7 @@
             </referenceContainer>
             <!--  total information -->
             <referenceContainer name="submit_before">
-                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" after="+" name="dominate_total_additional_fields_ship2" template="IWD_CheckoutConnector::shipment_total_information.phtml" >
+                <block class="IWD\CheckoutConnector\Block\Adminhtml\Order\AdditionalFields" after="-" name="dominate_total_additional_fields_ship2" template="IWD_CheckoutConnector::shipment_total_information.phtml" >
                     <action method="setOrderInfoArea">
                         <argument name="label" xsi:type="string">shipment</argument>
                     </action>

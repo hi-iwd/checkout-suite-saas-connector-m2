@@ -101,6 +101,16 @@
     --apple-pay-button-height: 45px;
     --apple-pay-button-box-sizing: border-box;
   }
+
+  .dominate-paypal-googlepay-btn {
+    display: block;
+    margin-top: 15px;
+    height: 45px;
+
+    button {
+      outline: none;
+    }
+  }
 }
 
 @media (min-width: 1100px) {
@@ -234,4 +244,12 @@
 
 .iwd-paypal-product-credit-ms{
   margin: 10px 0;
+}
+
+.iwd-paypal-banner span {
+  max-width: none !important;
+}
+
+div[data-pp-message] span:not(:last-of-type) {
+  display: none !important;
 }

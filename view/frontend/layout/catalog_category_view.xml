@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="top.container">
+            <block class="IWD\CheckoutConnector\Block\PayPal\Banner" name="iwd.paypal.category.banner" template="IWD_CheckoutConnector::paypal/banner.phtml" before="-">
+                <arguments>
+                    <argument name="placement" xsi:type="string">category</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

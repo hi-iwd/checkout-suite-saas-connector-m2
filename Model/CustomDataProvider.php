@@ -155,6 +155,8 @@ class CustomDataProvider
      *
      * @param $quote
      * @param $data
+     *
+     * @return mixed
      */
     public function saveDataToQuote($quote, $data)
     {
@@ -176,7 +178,7 @@ class CustomDataProvider
             }
         }
 
-        $this->cartRepository->save($quote);
+        return $quote;
     }
 
     /**

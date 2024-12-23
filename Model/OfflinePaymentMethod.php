@@ -34,6 +34,11 @@ class OfflinePaymentMethod implements OfflinePaymentMethodInterface
      */
     private $orderStatusCollection;
 
+	/**
+	 * @var CustomerGroup
+	 */
+	private $customerGroup;
+
     /**
      * @param AccessValidator $accessValidator
      * @param ScopeConfigInterface $scopeConfig

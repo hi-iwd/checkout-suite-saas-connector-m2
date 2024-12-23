@@ -21,6 +21,10 @@
         <plugin name="iwd_checkout_saas_payment_title" type="IWD\CheckoutConnector\Plugin\Payment\PaymentMethodTitle"/>
     </type>
 
+    <type name="Magento\Payment\Model\Method\AbstractMethod">
+        <plugin name="iwd_checkout_saas_restrict_offline_payments" type="IWD\CheckoutConnector\Plugin\Payment\OfflinePaymentsRestriction" />
+    </type>
+
     <type name="IWD\CheckoutConnector\Model\Method\IWDCheckoutPay">
         <plugin name="iwd_checkout_saas_payment_title" type="IWD\CheckoutConnector\Plugin\Payment\PaymentMethodTitle"/>
     </type>

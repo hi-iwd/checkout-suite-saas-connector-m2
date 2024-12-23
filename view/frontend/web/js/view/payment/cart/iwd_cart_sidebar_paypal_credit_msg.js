@@ -3,12 +3,14 @@ define(
         'jquery',
         'uiComponent',
         'Magento_Customer/js/customer-data',
+        'Magento_Checkout/js/model/quote',
         'dominatePayPalMessagingConfigurator',
     ],
     function (
         $,
         Component,
-        customerData
+        customerData,
+        quote,
     ) {
         'use strict';
 
@@ -26,22 +28,20 @@ define(
                 self._super();
                 self.cart = customerData.get('cart');
 
-                self.cart.subscribe(function() {
-                    self.initPayPalCreditMsg('.iwd-paypal-credit-msg');
-                });
+                quote.totals.subscribe(function (totals) {
+                    self.initPayPalCreditMsg('.iwd-cart-sidebar-wrapper .iwd-paypal-credit-msg', totals);
+                }, self);
             },
 
-            initPayPalCreditMsg: function (element = '.iwd-paypal-credit-msg:not([data-pp-id])') {
+            initPayPalCreditMsg: function (element, totals) {
                 let self = this,
                     creditMsgConfig = self.cart().paypal_credit_msg_config,
                     logoConfig = {type: creditMsgConfig.logo_type},
-                    amount = self.cart().subtotalAmount;
+                    amount = (totals && totals.grand_total !== undefined) ? totals.grand_total : creditMsgConfig.grand_total_amount;
 
                 if (creditMsgConfig.logo_type === 'alternative' || creditMsgConfig.logo_type === 'primary') {
                     logoConfig.position = creditMsgConfig.logo_position;
                 }
-
-                if (amount == 0) return;
 
                 if (creditMsgConfig.msg_configurator_data) {
                     const creditMsgElement = $(element).find('[data-pp-amount]');
@@ -50,7 +50,7 @@ define(
                         creditMsgElement.attr('data-pp-amount', amount);
                     } else {
                         const creditMsg = window.merchantConfigurators?.generateMessagingCodeSnippet({
-                            messageConfig: creditMsgConfig.msg_configurator_data.cart_preview,
+                            messageConfig: creditMsgConfig.msg_configurator_data.cart,
                             productPrice: amount
                         });
 

@@ -342,7 +342,7 @@ class Order implements OrderInterface
 
         // Save Custom Data to Quote
         if(isset($data['custom_data']['quote']) && $data['custom_data']['quote']) {
-            $this->customDataProvider->saveDataToQuote($quote, $data['custom_data']['quote']);
+	        $quote = $this->customDataProvider->saveDataToQuote($quote, $data['custom_data']['quote']);
         }
 
         // Collect Totals & Save Quote
@@ -540,12 +540,16 @@ class Order implements OrderInterface
 				];
 			}
 
-			$quote->reserveOrderId();
-			$orderIncrementId = $quote->getReservedOrderId();
+			if (!$quote->getReservedOrderId()) {
+				$quote->reserveOrderId();
+				$orderIncrementId = $quote->getReservedOrderId();
 
-			if ($orderIncrementId) {
-				$this->quote->saveQuote($quote);
-				$result['reserved_order_id'] = $orderIncrementId;
+				if ($orderIncrementId) {
+					$quote->save();
+					$result['reserved_order_id'] = $orderIncrementId;
+				}
+			} else {
+				$result['reserved_order_id'] = $quote->getReservedOrderId();
 			}
 		}
 

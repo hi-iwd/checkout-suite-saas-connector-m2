@@ -53,7 +53,8 @@ class CartTotals
      */
     public function getTotals($quote, $additional = true)
     {
-        $quoteShippingAddress = $quote->getShippingAddress();
+	    $quoteShippingAddress = $quote->getShippingAddress();
+	    $addressForTax        = ($quote->isVirtual()) ? $quote->getBillingAddress() : $quoteShippingAddress;
 
         $totals = [
             'version'           => $additional ? $this->moduleList->getOne('IWD_CheckoutConnector')['setup_version'] : null,
@@ -62,7 +63,7 @@ class CartTotals
             'currency'          => $quote->getBaseCurrencyCode(),
             'subtotal'          => $this->priceFormat($this->getSubtotal($quote)),
             'shipping'          => $this->priceFormat($this->getShippingAmount($quote)),
-            'tax'               => $this->priceFormat($quoteShippingAddress->getTaxAmount()),
+            'tax'               => $this->priceFormat($addressForTax->getTaxAmount()),
             'discount'          => $this->priceFormat(abs($quoteShippingAddress->getDiscountAmount())),
             'quote_grand_total' => $this->priceFormat($quote->getGrandTotal()),
             'grand_total'       => $this->priceFormat($quote->getBaseGrandTotal()),

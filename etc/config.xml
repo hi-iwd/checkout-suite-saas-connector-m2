@@ -98,7 +98,7 @@
             </iwd_checkout_offline_pay_custom>
             <iwd_checkout_multiple_payment>
                 <active>1</active>
-                <title>Dominate Multiple Payment Method</title>
+                <title>Dominate Custom Offline</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <model>IWDCheckoutPayOffline</model>

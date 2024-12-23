@@ -3,6 +3,7 @@
 namespace IWD\CheckoutConnector\Model\Ui;
 
 use IWD\CheckoutConnector\Helper\Data as Helper;
+use IWD\CheckoutConnector\Model\Address\Country;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -11,6 +12,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Math\Random;
 use Magento\Payment\Gateway\Config\Config;
+use Magento\Quote\Model\Quote;
 
 /**
  * Class IWDCheckoutPayConfigProvider
@@ -46,27 +48,32 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
 	protected $configWriter;
 
 	/**
-	 * Constructor
-	 *
-	 * @param CheckoutSession      $checkoutSession
+	 * @var Country
+	 */
+	protected $country;
+
+	/**
 	 * @param Config               $config
 	 * @param Random               $random
 	 * @param Helper               $helper
 	 * @param ScopeConfigInterface $scopeConfig
 	 * @param WriterInterface      $configWriter
+	 * @param Country              $country
 	 */
 	public function __construct(
 		Config $config,
 		Random $random,
 		Helper $helper,
 		ScopeConfigInterface $scopeConfig,
-		WriterInterface $configWriter
+		WriterInterface $configWriter,
+		Country $country,
 	) {
 		$this->config       = $config;
 		$this->random       = $random;
 		$this->helper       = $helper;
 		$this->scopeConfig  = $scopeConfig;
 		$this->configWriter = $configWriter;
+		$this->country      = $country;
 	}
 
 	/**
@@ -95,29 +102,42 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
 	public function getButtonConfig($containerId)
 	{
 		return [
-			'containerId'       => $containerId,
-			'checkoutIframeId'  => $this->helper->getCheckoutIframeId(),
-			'checkoutPageUrl'   => $this->helper->getCheckoutPageUrl(),
-			'successActionUrl'  => $this->helper->getActionSuccess(),
-			'dominateApiKey'    => $this->helper->getIntegrationApiKey(),
-			'dominateAppUrl'    => $this->helper->getAppUrl(),
-			'customerToken'     => $this->helper->getCustomerToken(),
-			'quoteId'           => $this->helper->getQuoteId(),
-			'maskedQuoteId'     => $this->helper->getMaskedQuoteId(),
-			'isVirtual'         => $this->helper->isQuoteVirtual(),
-			'displayName'       => $this->helper->getMerchantName(),
-			'isLoggedIn'        => $this->helper->isCustomerLoggedIn(),
-			'isCheckoutAllowed' => $this->helper->isCheckoutAllowed(),
-			'isCheckoutPage'    => $this->helper->isCheckoutPage(),
-			'storeCode'         => $this->helper->getStoreCode(),
-			'currencyCode'      => $this->helper->getCurrencyCode(),
-			'grandTotalAmount'  => $this->helper->getGrandTotalAmount(),
-			'btnShape'          => $this->getConfigData('btn_shape'),
-			'btnColor'          => $this->getConfigData('btn_color'),
-			'creditStatus'      => (bool) $this->getConfigData('paypal_credit_status'),
-			'venmoStatus'       => (bool) $this->getConfigData('paypal_venmo_status'),
-			'applepayStatus'    => (bool) $this->getConfigData('paypal_applepay_status'),
+			'containerId'         => $containerId,
+			'checkoutIframeId'    => $this->helper->getCheckoutIframeId(),
+			'checkoutPageUrl'     => $this->helper->getCheckoutPageUrl(),
+			'successActionUrl'    => $this->helper->getActionSuccess(),
+			'dominateApiKey'      => $this->helper->getIntegrationApiKey(),
+			'dominateAppUrl'      => $this->helper->getAppUrl(),
+			'customerToken'       => $this->helper->getCustomerToken(),
+			'quoteId'             => $this->helper->getQuoteId(),
+			'maskedQuoteId'       => $this->helper->getMaskedQuoteId(),
+			'isVirtual'           => $this->helper->isQuoteVirtual(),
+			'displayName'         => $this->helper->getMerchantName(),
+			'isLoggedIn'          => $this->helper->isCustomerLoggedIn(),
+			'isCheckoutAllowed'   => $this->helper->isCheckoutAllowed(),
+			'isCheckoutPage'      => $this->helper->isCheckoutPage(),
+			'storeCode'           => $this->helper->getStoreCode(),
+			'currencyCode'        => $this->helper->getCurrencyCode(),
+			'grandTotalAmount'    => $this->helper->getGrandTotalAmount(),
+			'btnShape'            => $this->getConfigData('btn_shape'),
+			'btnColor'            => $this->getConfigData('btn_color'),
+			'paypalStatus'        => (bool) $this->getConfigData('status'),
+			'paypalEnvironment'   => $this->getConfigData('paypal_environment'),
+			'creditStatus'        => (bool) $this->getConfigData('paypal_credit_status'),
+			'venmoStatus'         => (bool) $this->getConfigData('paypal_venmo_status'),
+			'applepayStatus'      => (bool) $this->getConfigData('paypal_applepay_status'),
+			'googlepayStatus'     => (bool) $this->getConfigData('paypal_googlepay_status'),
+			'allowedCountryCodes' => $this->getAllowedCountryCodes(),
 		];
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getPayPalBannerConfig()
+	{
+		return $this->getConfigData('paypal_credit_msg_configurator_data')
+			? json_decode($this->getConfigData('paypal_credit_msg_configurator_data')) : null;
 	}
 
 	/**
@@ -193,6 +213,14 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
 	}
 
 	/**
+	 * @return Quote
+	 */
+	public function getQuote()
+	{
+		return $this->helper->getQuote();
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getTittle()
@@ -208,4 +236,19 @@ class IWDCheckoutPayConfigProvider implements ConfigProviderInterface
 		return $this->getConfigData('order_status');
 	}
 
+	/**
+	 * Retrieves the allowed country codes for the current quote.
+	 *
+	 * @return array An array of allowed country codes.
+	 */
+	private function getAllowedCountryCodes()
+	{
+		$allowedCountryCodes = [];
+
+		foreach ($this->country->getCountry($this->helper->getQuote()) as $country ){
+			$allowedCountryCodes[] = $country['value'];
+		}
+
+		return $allowedCountryCodes;
+	}
 }

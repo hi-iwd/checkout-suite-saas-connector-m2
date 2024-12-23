@@ -1,13 +1,14 @@
 define([
     'uiComponent',
-    'jquery'
+    'jquery',
+    'dominatePayPalJS',
+    'dominatePayPalMessagingConfigurator',
 ], function (Component, $) {
     'use strict';
 
     var _this;
 
     return Component.extend({
-
         config: {
             client_id: null,
             merchant_id: null
@@ -30,7 +31,7 @@ define([
                         "client-id": _self.config.client_id,
                         "commit": "false",
                         "intent": "authorize",
-                        "components": "buttons,messages,applepay",
+                        "components": "buttons,messages,applepay,googlepay",
                         "vault": "false",
                         "enable-funding": "paylater,venmo",
                         "merchant-id": _self.config.merchant_id,
@@ -47,24 +48,41 @@ define([
         },
 
         addButton: function () {
-            let container = '.iwd-paypal-product-credit-ms',
-                _self = this;
+            let _self = this,
+                container = '.iwd-paypal-product-credit-ms';
+
             setTimeout(function () {
-                $(container).html();
-                paypal.Messages({
-                    amount: _self.getValue(),
-                    pageType: 'payment',
-                    style: {
-                        layout: 'text',
-                        logo: _self.config.logoConfig,
-                        text: {
-                            color: _self.config.color
-                        }
-                    },
-                }).render(container).catch((error) => {
-                    console.log("Failed to render the PayPal MSG", error);
-                    $(container).hide();
-                });
+                if (_self.config.msg_configurator_data) {
+                    const creditMsgElement = $(container).find('[data-pp-amount]');
+
+                    if (creditMsgElement.length) {
+                        creditMsgElement.attr('data-pp-amount', _self.getValue());
+                    } else {
+                        const creditMsg = window.merchantConfigurators?.generateMessagingCodeSnippet({
+                            messageConfig: _self.config.msg_configurator_data.product,
+                            productPrice: _self.getValue()
+                        });
+
+                        $(container).prepend(creditMsg);
+                    }
+                } else {
+                    $(container).html();
+
+                    window.paypal.Messages({
+                        amount: _self.getValue(),
+                        pageType: 'payment',
+                        style: {
+                            layout: 'text',
+                            logo: _self.config.logoConfig,
+                            text: {
+                                color: _self.config.color
+                            }
+                        },
+                    }).render(container).catch((error) => {
+                        console.log("Failed to render the PayPal MSG", error);
+                        $(container).hide();
+                    });
+                }
             }, 300);
         },
 

@@ -39,14 +39,16 @@ class Cart
     {
         $config = $this->configProvider;
 
-        $result['paypal_credit_msg_config'] = [
-            'status'             => $config->getConfigData('paypal_credit_status'),
-            'container_id'       => $config->getGeneratedContainerId(),
-            'grand_total_amount' => $config->getGrandTotalAmount(),
-            'logo_type'          => $config->getConfigData('credit_msg_logo_type'),
-            'logo_position'      => $config->getConfigData('credit_msg_logo_position'),
-            'text_color'         => $config->getConfigData('credit_msg_text_color'),
-        ];
+	    $result['paypal_credit_msg_config'] = [
+		    'status'                  => $config->getConfigData('paypal_credit_status'),
+		    'container_id'            => $config->getGeneratedContainerId(),
+		    'grand_total_amount'      => $config->getGrandTotalAmount(),
+		    'logo_type'               => $config->getConfigData('credit_msg_logo_type'),
+		    'logo_position'           => $config->getConfigData('credit_msg_logo_position'),
+		    'text_color'              => $config->getConfigData('credit_msg_text_color'),
+		    'msg_configurator_data'   => $config->getConfigData('paypal_credit_msg_configurator_data')
+			    ? json_decode($config->getConfigData('paypal_credit_msg_configurator_data')) : null,
+	    ];
 
         return $result;
     }

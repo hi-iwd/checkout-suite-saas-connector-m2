@@ -9,14 +9,15 @@ $merchantId = $block->getMerchantId() ? $block->getMerchantId() : ''
 <?php if($block->getPaypalStatus()): ?>
     <script>
         require([
-            "jquery"
+            "jquery",
+            "dominatePayPalJS"
         ], function ($) {
             if (typeof window.paypal === 'undefined') {
                 let scriptParams = {
                     "client-id": "<?= $block->getClientId() ?>",
                     "commit": "false",
                     "intent": "authorize",
-                    "components": "buttons,messages,applepay",
+                    "components": "buttons,messages,applepay,googlepay",
                     "vault": "false",
                     "merchant-id": "<?= $merchantId ?>",
                     "currency": "<?= $block->getCurrencyCode() ?>",
