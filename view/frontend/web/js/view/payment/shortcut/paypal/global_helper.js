@@ -183,8 +183,8 @@ define(
             getBillingInfoObject: function (shippingAddress, billingAddress) {
                 return {
                     address: {
-                        email: billingAddress.emailAddress,
-                        telephone: billingAddress.phoneNumber,
+                        email: billingAddress.emailAddress ? billingAddress.emailAddress : shippingAddress.emailAddress,
+                        telephone: billingAddress.phoneNumber ? billingAddress.phoneNumber : shippingAddress.phoneNumber,
                         firstname: billingAddress.firstName,
                         lastname: billingAddress.lastName,
                         street: billingAddress.addressLines,
@@ -228,8 +228,8 @@ define(
                             save_in_address_book: 0
                         },
                         billing_address: {
-                            email: billingAddress.emailAddress,
-                            telephone: billingAddress.phoneNumber,
+                            email: billingAddress.emailAddress ? billingAddress.emailAddress : shippingAddress.emailAddress,
+                            telephone: billingAddress.phoneNumber ? billingAddress.phoneNumber : shippingAddress.phoneNumber,
                             firstname: billingAddress.firstName,
                             lastname: billingAddress.lastName,
                             street: billingAddress.addressLines,
