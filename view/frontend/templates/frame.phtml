@@ -5,14 +5,17 @@
 ?>
 
 <div class="iwd-checkout-iframe-wrapper">
+
     <iframe id="<?= $block->getCheckoutIframeId() ?>"
             src="<?= $block->getFrameUrl() ?>"
             data-mage-init='<?= $block->getJsonConfig() ?>'
             frameborder="0"
             scrolling="no"
             allow="payment"
+            class="iwd-checkout-iframe-js"
             onload="this.dataset.loaded = 'true'">
     </iframe>
+    <script src="https://2258284559.nxcli.net/staging/public/js/skeleton-loader.js"></script>
 </div>
 
 <script type="text/javascript">

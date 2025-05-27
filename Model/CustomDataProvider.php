@@ -269,6 +269,7 @@ class CustomDataProvider
             $customer->setLastname($order->getCustomerLastname() ? $order->getCustomerLastname() : $order->getBillingAddress()->getLastname());
 
             $customer->save();
+            $customer->sendNewAccountEmail();
 
             $this->createCustomerAddress($customer, [$order->getBillingAddress(), $order->getShippingAddress()]);
 
