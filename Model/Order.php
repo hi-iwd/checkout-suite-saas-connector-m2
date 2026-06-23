@@ -357,6 +357,39 @@ class Order implements OrderInterface
 
         $this->orderHelper->ignoreAddressValidation($quote);
 
+        // Magento 2.4.9 hard-fails order submit with "Please provide billing address for the order."
+        // when the billing address is empty (older versions allowed it via setShouldIgnoreValidation).
+        // Some customers have only a shipping address, so mirror shipping -> billing when billing is incomplete.
+        if (!$quote->isVirtual()) {
+            $billingAddress  = $quote->getBillingAddress();
+            $shippingAddress = $quote->getShippingAddress();
+
+            $billingIncomplete = !$billingAddress->getStreetLine(1)
+                || !$billingAddress->getCity()
+                || !$billingAddress->getCountryId();
+
+            $shippingComplete = $shippingAddress->getStreetLine(1)
+                && $shippingAddress->getCity()
+                && $shippingAddress->getCountryId();
+
+            if ($billingIncomplete && $shippingComplete) {
+                $billingAddress->setFirstname($shippingAddress->getFirstname())
+                    ->setLastname($shippingAddress->getLastname())
+                    ->setCompany($shippingAddress->getCompany())
+                    ->setStreet($shippingAddress->getStreet())
+                    ->setCity($shippingAddress->getCity())
+                    ->setRegion($shippingAddress->getRegion())
+                    ->setRegionId($shippingAddress->getRegionId())
+                    ->setPostcode($shippingAddress->getPostcode())
+                    ->setCountryId($shippingAddress->getCountryId())
+                    ->setTelephone($shippingAddress->getTelephone());
+
+                if (!$billingAddress->getEmail() && $shippingAddress->getEmail()) {
+                    $billingAddress->setEmail($shippingAddress->getEmail());
+                }
+            }
+        }
+
         // Create/attach customer BEFORE order submit (for rewards/extensions)
         if (!empty($data['custom_data']['dominate']['create_customer_account'])) {
             $this->customDataProvider->createCustomerAccountForQuote($quote);
