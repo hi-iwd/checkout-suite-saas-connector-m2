@@ -181,7 +181,7 @@ class Opc implements OpcInterface
             $response['saved_addresses'] = $this->address->getSavedCustomerAddresses($quote);
 
             $customerAddresses = $this->address->getCustomerAddresses($quote);
-            
+
             if ($customerAddresses) {
                 if(!empty($customerAddresses['shipping'])){
                     $quote->getShippingAddress()->addData($customerAddresses['shipping']);
@@ -206,8 +206,6 @@ class Opc implements OpcInterface
 
                     $quote->getShippingAddress()->setShippingMethod($selectedShippingMethod['method_code'])
                         ->setCollectShippingRates(true);
-
-                    $quote->collectTotals();
                 }
 
                 $response['delivery_methods']       = $shippingMethods;
@@ -215,6 +213,7 @@ class Opc implements OpcInterface
             }
         }
 
+        $quote->collectTotals();
         $quote->save();
 
         $available_countries = $this->country->getCountry($quote);

@@ -111,7 +111,7 @@ class OrderUpdater
 	private function isUpdateAllowed()
 	{
 		return $this->order
-		       && in_array($this->order->getPayment()->getMethodInstance()->getCode(), $this->iwdPaymentMethods)
+		       && in_array($this->order->getPayment()->getMethod(), $this->iwdPaymentMethods)
 		       && $this->order->getShippingMethod() !== Subscription::CODE;
 	}
 

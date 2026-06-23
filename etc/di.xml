@@ -187,4 +187,24 @@
     <type name="Magento\Sales\Block\Items\AbstractItems">
         <plugin name="iwd_additional_fields_block_add_to_email" type="IWD\CheckoutConnector\Block\Order\Plugin\OrderEmail" />
     </type>
+
+    <!-- Dedicated log file for the Dominate checkout connector: var/log/iwd_dominate_checkout.log -->
+    <virtualType name="IwdDominateCheckoutLogHandler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/iwd_dominate_checkout.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="IwdDominateCheckoutLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">iwdDominateCheckout</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">IwdDominateCheckoutLogHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="IWD\CheckoutConnector\Model\Order">
+        <arguments>
+            <argument name="logger" xsi:type="object">IwdDominateCheckoutLogger</argument>
+        </arguments>
+    </type>
 </config>

@@ -10,7 +10,10 @@ use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Customer\Model\CustomerFactory;
+use Magento\Customer\Api\AccountManagementInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Api\Data\CustomerInterfaceFactory;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Customer\Model\AddressFactory;
 use Magento\Customer\Model\ResourceModel\Address;
 use IWD\CheckoutConnector\Helper\Order as OrderHelper;
@@ -69,9 +72,19 @@ class CustomDataProvider
 	private $logger;
 
     /**
-     * @var CustomerFactory
+     * @var CustomerRepositoryInterface
      */
-	private $customerFactory;
+    private $customerRepository;
+
+    /**
+     * @var AccountManagementInterface
+     */
+    private $accountManagement;
+
+    /**
+     * @var CustomerInterfaceFactory
+     */
+    private $customerDataFactory;
 
     /**
      * @var AddressFactory
@@ -96,6 +109,12 @@ class CustomDataProvider
      * @param PageFactory $resultPageFactory
      * @param Subscriber $subscriber
      * @param LoggerInterface $logger
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param AccountManagementInterface $accountManagement
+     * @param CustomerInterfaceFactory $customerDataFactory
+     * @param AddressFactory $addressFactory
+     * @param Address $addressResource
+     * @param OrderHelper $orderHelper
      */
     public function __construct(
         CartRepositoryInterface $cartRepository,
@@ -103,7 +122,9 @@ class CustomDataProvider
         PageFactory $resultPageFactory,
 	    Subscriber $subscriber,
 	    LoggerInterface $logger,
-        CustomerFactory $customerFactory,
+        CustomerRepositoryInterface $customerRepository,
+        AccountManagementInterface $accountManagement,
+        CustomerInterfaceFactory $customerDataFactory,
         AddressFactory $addressFactory,
         Address $addressResource,
         OrderHelper $orderHelper
@@ -113,7 +134,9 @@ class CustomDataProvider
 	    $this->resultPageFactory = $resultPageFactory;
 	    $this->subscriber        = $subscriber;
 	    $this->logger            = $logger;
-	    $this->customerFactory   = $customerFactory;
+	    $this->customerRepository = $customerRepository;
+	    $this->accountManagement  = $accountManagement;
+	    $this->customerDataFactory = $customerDataFactory;
 	    $this->addressFactory    = $addressFactory;
 	    $this->addressResource   = $addressResource;
 	    $this->orderHelper       = $orderHelper;
@@ -254,24 +277,38 @@ class CustomDataProvider
 	}
 
     /**
-     * @param $order
+     * Create a customer account from a placed order and link it to the order.
+     *
+     * @param \Magento\Sales\Api\Data\OrderInterface $order
+     * @return void
      */
-	private function createCustomerAccount($order)
+    private function createCustomerAccount($order)
     {
         try {
-            if ($order->getCustomerId()) return;
+            if ($order->getCustomerId()) {
+                return;
+            }
 
-            $customer = $this->customerFactory->create();
+            $email = $order->getCustomerEmail();
+            if (!$email) {
+                return;
+            }
 
-            $customer->setWebsiteId($order->getStore()->getWebsiteId());
-            $customer->setEmail($order->getCustomerEmail());
-            $customer->setFirstname($order->getCustomerFirstname() ? $order->getCustomerFirstname() : $order->getBillingAddress()->getFirstname());
-            $customer->setLastname($order->getCustomerLastname() ? $order->getCustomerLastname() : $order->getBillingAddress()->getLastname());
+            $billingAddress = $order->getBillingAddress();
+            $websiteId = (int) $order->getStore()->getWebsiteId();
 
-            $customer->save();
-            $customer->sendNewAccountEmail();
-
-            $this->createCustomerAddress($customer, [$order->getBillingAddress(), $order->getShippingAddress()]);
+            try {
+                // Customer already exists - assignCustomerToOrder() links it below.
+                $this->customerRepository->get($email, $websiteId);
+            } catch (NoSuchEntityException $e) {
+                $this->createNewCustomer(
+                    $email,
+                    $websiteId,
+                    $order->getCustomerFirstname() ?: ($billingAddress ? $billingAddress->getFirstname() : null),
+                    $order->getCustomerLastname() ?: ($billingAddress ? $billingAddress->getLastname() : null),
+                    [$order->getBillingAddress(), $order->getShippingAddress()]
+                );
+            }
 
             $this->orderHelper->assignCustomerToOrder($order);
         } catch (\Exception $e) {
@@ -280,12 +317,13 @@ class CustomDataProvider
     }
 
     /**
-     * @param $customer
-     * @param $addresses
+     * Save quote/order addresses to a customer's address book.
      *
+     * @param int $customerId
+     * @param array $addresses
      * @return void
      */
-    private function createCustomerAddress($customer, $addresses)
+    private function createCustomerAddress($customerId, $addresses)
     {
         try {
             foreach ($addresses as $address) {
@@ -293,7 +331,7 @@ class CustomDataProvider
 
                 $customerAddress = $this->addressFactory->create();
 
-                $customerAddress->setCustomerId($customer->getId())
+                $customerAddress->setCustomerId($customerId)
                     ->setFirstname($address->getFirstname())
                     ->setLastname($address->getLastname())
                     ->setCountryId($address->getCountryId())
@@ -314,5 +352,91 @@ class CustomDataProvider
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
         }
+    }
+
+    /**
+     * Create/fetch a customer account and attach it to the quote BEFORE order submit, so that
+     * Magento builds a registered-customer order (rewards/loyalty/customer-scoped extensions work).
+     *
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return void
+     */
+    public function createCustomerAccountForQuote($quote)
+    {
+        try {
+            if ($quote->getCustomerId()) {
+                return;
+            }
+
+            $billingAddress = $quote->getBillingAddress();
+            $email = $quote->getCustomerEmail() ?: ($billingAddress ? $billingAddress->getEmail() : null);
+            if (!$email) {
+                return;
+            }
+
+            $websiteId = (int) $quote->getStore()->getWebsiteId();
+
+            try {
+                $customer = $this->customerRepository->get($email, $websiteId);
+            } catch (NoSuchEntityException $e) {
+                $customer = $this->createNewCustomer(
+                    $email,
+                    $websiteId,
+                    $quote->getCustomerFirstname() ?: ($billingAddress ? $billingAddress->getFirstname() : null),
+                    $quote->getCustomerLastname() ?: ($billingAddress ? $billingAddress->getLastname() : null),
+                    [$quote->getBillingAddress(), $quote->getShippingAddress()]
+                );
+            }
+
+            if (!$customer || !$customer->getId()) {
+                return;
+            }
+
+            // setCustomer() refreshes the quote's cached customer object (and copies customer
+            // fields onto the quote) so QuoteManagement::submit() links this customer instead of
+            // creating a duplicate account. assignCustomer() is intentionally NOT used: it would
+            // overwrite the checkout-entered addresses with the customer's default/empty addresses.
+            $quote->setCustomer($customer);
+            $quote->setCustomerIsGuest(false);
+
+            // Tag the quote addresses with the customer id so order submit reuses them
+            // instead of saving duplicate address-book entries.
+            if ($quote->getBillingAddress()) {
+                $quote->getBillingAddress()->setCustomerId($customer->getId());
+            }
+            if ($quote->getShippingAddress()) {
+                $quote->getShippingAddress()->setCustomerId($customer->getId());
+            }
+
+            $quote->save();
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
+    }
+
+    /**
+     * Create a new customer account. The service-contract API handles website scoping and the
+     * welcome / set-password email; the given addresses are copied to the address book.
+     *
+     * @param string $email
+     * @param int $websiteId
+     * @param string|null $firstname
+     * @param string|null $lastname
+     * @param array $addresses
+     * @return \Magento\Customer\Api\Data\CustomerInterface
+     */
+    private function createNewCustomer($email, $websiteId, $firstname, $lastname, array $addresses)
+    {
+        $customerData = $this->customerDataFactory->create();
+        $customerData->setWebsiteId($websiteId)
+            ->setEmail($email)
+            ->setFirstname($firstname)
+            ->setLastname($lastname);
+
+        $customer = $this->accountManagement->createAccount($customerData);
+
+        $this->createCustomerAddress($customer->getId(), $addresses);
+
+        return $customer;
     }
 }

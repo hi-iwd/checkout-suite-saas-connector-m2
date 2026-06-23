@@ -308,6 +308,9 @@ class Data extends AbstractHelper
 	 */
 	public function getFrameParams(Quote $quote)
 	{
+        $quote->collectTotals();
+        $quote->save();
+
 		$addresses = $this->address->formatAddress($quote);
 
 		$this->shippingMethods->getShippingMethods($quote);

@@ -47,11 +47,12 @@ class CartTotals
     }
 
     /**
-     * @param $quote Quote
-     *
+     * @param \Magento\Quote\Model\Quote $quote
+     * @param bool $additional
+     * @param bool $retried Internal recursion guard for the totals self-heal retry.
      * @return array
      */
-    public function getTotals($quote, $additional = true)
+    public function getTotals($quote, $additional = true, $retried = false)
     {
 	    $quoteShippingAddress = $quote->getShippingAddress();
 	    $addressForTax        = ($quote->isVirtual()) ? $quote->getBillingAddress() : $quoteShippingAddress;
@@ -71,6 +72,18 @@ class CartTotals
             'currency_symbol'   => $this->currency->getCurrencySymbol(),
             'country'           => $additional ? $quoteShippingAddress->getCountryId() : null
         ];
+
+        // Components above are in quote (display) currency, so compare against quote_grand_total
+        // (also display currency) - not grand_total, which is base currency.
+        $expectedSum = $totals['subtotal'] + $totals['shipping'] + $totals['tax'] - $totals['discount'];
+
+        if (!$retried && abs($totals['quote_grand_total'] - $expectedSum) > 0.01) {
+            $quote->setTotalsCollectedFlag(false);
+            $quote->collectTotals();
+            $quote->save();
+
+            return $this->getTotals($quote, $additional, true);
+        }
 
 		if ($this->taxConfig->displayCartSubtotalBoth($quote->getStoreId())) {
 			$totals['subtotal_excl_tax'] = $this->priceFormat($quote->getSubtotal());

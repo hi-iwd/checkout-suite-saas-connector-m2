@@ -30,6 +30,7 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use IWD\CheckoutConnector\Model\Email\Sender;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -160,6 +161,11 @@ class Order implements OrderInterface
     protected $emailSender;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param QuoteManagement $quoteManagement
      * @param OrderFactory $orderFactory
      * @param AccessValidator $accessValidator
@@ -183,6 +189,7 @@ class Order implements OrderInterface
      * @param CustomDataProvider $customDataProvider
      * @param QuoteValidator $quoteValidator
      * @param Sender $emailSender
+     * @param LoggerInterface $logger
      */
     public function __construct(
         QuoteManagement $quoteManagement,
@@ -207,7 +214,8 @@ class Order implements OrderInterface
         StoreManagerInterface $storeManager,
         CustomDataProvider $customDataProvider,
         QuoteValidator $quoteValidator,
-        Sender $emailSender
+        Sender $emailSender,
+        LoggerInterface $logger
     ) {
         $this->quoteManagement = $quoteManagement;
         $this->orderFactory = $orderFactory;
@@ -232,6 +240,7 @@ class Order implements OrderInterface
         $this->customDataProvider = $customDataProvider;
         $this->quoteValidator = $quoteValidator;
         $this->emailSender = $emailSender;
+        $this->logger = $logger;
     }
 
     /**
@@ -246,16 +255,16 @@ class Order implements OrderInterface
             return 'Permissions Denied!';
         }
 
-        $paymentCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
-        $paymentTitle = $data['payment_method_title'];
-        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
+        $quote = null;
+        $paymentCode = null;
 
         try {
+            $paymentCode = $this->IWDCheckoutPayConfigProvider->getPaymentMethodCode();
+            $paymentTitle = $data['payment_method_title'];
+            $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
             $this->processOrderCreation($quote, $data, $paymentTitle);
         } catch (Throwable $e) {
-            $this->emailSender->sendEmail($quote, $data, $this->cartItems->getItems($quote));
-            $this->orderCreationResult['error'] = 1;
-            $this->orderCreationResult['error_message'] = $e->getMessage();
+            $this->handleOrderCreationException($e, $quote, $data, $quote_id, $paymentCode);
         }
 
         return $this->orderCreationResult;
@@ -273,21 +282,59 @@ class Order implements OrderInterface
             return 'Permissions Denied!';
         }
 
-        $offlineConfigProvider = $this->offlinePaymentsHelper->getConfigProvider($data['payment_method_code']);
-        $paymentCode = $offlineConfigProvider->getPaymentMethodCode();
-        $paymentTitle = $offlineConfigProvider->getTittle($data['payment_method_code']);
-        $orderStatus = $offlineConfigProvider->getOrderStatus($data['payment_method_code']);
-        $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
+        $quote = null;
+        $paymentCode = null;
 
         try {
+            $offlineConfigProvider = $this->offlinePaymentsHelper->getConfigProvider($data['payment_method_code']);
+            $paymentCode = $offlineConfigProvider->getPaymentMethodCode();
+            $paymentTitle = $offlineConfigProvider->getTittle($data['payment_method_code']);
+            $orderStatus = $offlineConfigProvider->getOrderStatus($data['payment_method_code']);
+            $quote = $this->prepareQuoteForSubmit($quote_id, $data, $paymentCode, $paymentTitle);
             $this->processOrderCreation($quote, $data, $paymentTitle, $orderStatus);
         } catch (Throwable $e) {
-            $this->emailSender->sendEmail($quote, $data, $this->cartItems->getItems($quote));
-            $this->orderCreationResult['error'] = 1;
-            $this->orderCreationResult['error_message'] = $e->getMessage();
+            $this->handleOrderCreationException($e, $quote, $data, $quote_id, $paymentCode);
         }
 
         return $this->orderCreationResult;
+    }
+
+    /**
+     * Log an order-creation failure (with full stack trace) to the dedicated connector log,
+     * send the failure notification, and record the error for the SaaS response - without
+     * letting a failed notification mask the original exception.
+     *
+     * @param Throwable $e
+     * @param \Magento\Quote\Model\Quote|null $quote
+     * @param mixed $data
+     * @param string|int $quoteId
+     * @param string|null $paymentCode
+     * @return void
+     */
+    private function handleOrderCreationException(Throwable $e, $quote, $data, $quoteId, $paymentCode)
+    {
+        // Log first, with the full trace, before anything that could itself fail.
+        $this->logger->critical(sprintf(
+            '[Dominate] Order creation failed - quote: %s, reserved: %s, payment: %s, store: %s%s%s',
+            $quoteId,
+            $quote ? $quote->getReservedOrderId() : 'n/a',
+            $paymentCode ?: 'n/a',
+            $quote ? $quote->getStoreId() : 'n/a',
+            PHP_EOL,
+            $e
+        ));
+
+        // The failure-notification email must never replace the original error.
+        try {
+            if ($quote) {
+                $this->emailSender->sendEmail($quote, $data, $this->cartItems->getItems($quote));
+            }
+        } catch (Throwable $mailError) {
+            $this->logger->error('[Dominate] Failed to send order-failure notification email: ' . $mailError->getMessage());
+        }
+
+        $this->orderCreationResult['error'] = 1;
+        $this->orderCreationResult['error_message'] = $e->getMessage();
     }
 
 	/**
@@ -310,8 +357,13 @@ class Order implements OrderInterface
 
         $this->orderHelper->ignoreAddressValidation($quote);
 
-        // Assign Guest Customer to Quote
-        if (!$quote->getCustomer()->getId()) {
+        // Create/attach customer BEFORE order submit (for rewards/extensions)
+        if (!empty($data['custom_data']['dominate']['create_customer_account'])) {
+            $this->customDataProvider->createCustomerAccountForQuote($quote);
+        }
+
+        // Assign Guest Customer to Quote (only if we truly have no customer attached)
+        if (!$quote->getCustomerId()) {
             $this->orderHelper->assignGuestCustomerToQuote($quote);
         }
 
@@ -399,6 +451,12 @@ class Order implements OrderInterface
 			    foreach ($data['comments'] as $commentType => $commentVal) {
 				    $order->addStatusHistoryComment(__($commentVal));
 			    }
+			    $customerNotes = array_filter($data['comments'], function ($v) {
+				    return is_scalar($v) && trim((string) $v) !== '';
+			    });
+			    if ($customerNotes) {
+				    $order->setCustomerNote(implode("\n", array_map('trim', $customerNotes)));
+			    }
 			    $order->save();
 		    }
 
@@ -473,8 +531,6 @@ class Order implements OrderInterface
             } elseif ($paymentAction == 'refund' && $transaction) {
                 $this->orderHelper->addTransactionToOrder($order, $transaction['refund'], Transaction::TYPE_REFUND, 'refunded');
                 $this->invoiceManagement->refundInvoiceByOrder($order, $transaction['refund']['id']);
-
-                $this->removeComment($order->getId());
             } elseif ($paymentAction == 'void') {
                 $order->getPayment()->setHasMessage(true);
                 $order->getPayment()->setMessage('Voided authorization.');
@@ -559,31 +615,6 @@ class Order implements OrderInterface
         $result['cart']                   = $this->cartTotals->getTotals($quote);
 
         return $result;
-    }
-
-    /**
-     * @param $orderId
-     */
-    private function removeComment($orderId)
-    {
-        $sortOrder = $this->sortOrderBuilder
-            ->setField(OrderStatusHistoryInterface::ENTITY_ID)
-            ->setDirection(SortOrder::SORT_DESC)
-            ->create();
-
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter(OrderStatusHistoryInterface::PARENT_ID, $orderId, 'eq')
-            ->setSortOrders([$sortOrder])
-            ->setPageSize(1)
-            ->create();
-
-        $comments = $this->orderStatusHistoryRepository->getList($searchCriteria)->getItems();
-        if ($comments) {
-            $comment = array_shift($comments);
-            try {
-                $this->orderStatusHistoryRepository->delete($comment);
-            } catch (Exception $e) {}
-        }
     }
 
     /**

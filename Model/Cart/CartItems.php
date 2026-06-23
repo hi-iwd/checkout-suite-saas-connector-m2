@@ -4,11 +4,14 @@ namespace IWD\CheckoutConnector\Model\Cart;
 
 use Magento\Catalog\Api\ProductRepositoryInterfaceFactory;
 use Magento\Catalog\Helper\ImageFactory;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Directory\Model\Currency;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\BlockFactory;
 use Magento\Quote\Model\Quote;
 use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Model\Config as TaxConfig;
 
@@ -19,6 +22,8 @@ use Magento\Tax\Model\Config as TaxConfig;
  */
 class CartItems
 {
+    const XML_PATH_CONFIGURABLE_PRODUCT_IMAGE = 'checkout/cart/configurable_product_image';
+
     /**
      * @var ProductRepositoryInterfaceFactory
      */
@@ -55,6 +60,11 @@ class CartItems
     protected $taxConfig;
 
     /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    /**
      * CartItems constructor.
      * @param ProductRepositoryInterfaceFactory $productRepository
      * @param ImageFactory $productImageHelper
@@ -63,6 +73,7 @@ class CartItems
      * @param BlockFactory $blockFactory
      * @param Emulation $appEmulation
      * @param TaxConfig $taxConfig
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
         ProductRepositoryInterfaceFactory $productRepository,
@@ -71,7 +82,8 @@ class CartItems
         StoreManagerInterface $storeManager,
         BlockFactory $blockFactory,
         Emulation $appEmulation,
-        TaxConfig $taxConfig
+        TaxConfig $taxConfig,
+        ScopeConfigInterface $scopeConfig
 
     ) {
         $this->productRepository = $productRepository;
@@ -81,6 +93,7 @@ class CartItems
         $this->_blockFactory = $blockFactory;
         $this->_appEmulation = $appEmulation;
         $this->taxConfig = $taxConfig;
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -94,12 +107,24 @@ class CartItems
 
         foreach ($quote->getAllVisibleItems() as $index => $item) {
             $productData = $this->productRepository->create()->getById($item->getProductId());
+            $imageProduct = $productData;
+
+	        // For configurable products, respect the "Configurable Product Image" config and use
+	        // the selected child variant for the IMAGE ONLY (name/description/URL/UPC stay on parent).
+	        if ($item->getProductType() === Configurable::TYPE_CODE
+	            && $this->scopeConfig->getValue(self::XML_PATH_CONFIGURABLE_PRODUCT_IMAGE, ScopeInterface::SCOPE_STORE) !== 'parent') {
+		        $childItem = $item->getOptionByCode('simple_product');
+		        if ($childItem && $childItem->getProduct() && $childItem->getProduct()->getThumbnail()
+		            && $childItem->getProduct()->getThumbnail() !== 'no_selection') {
+			        $imageProduct = $this->productRepository->create()->getById($childItem->getProduct()->getId());
+		        }
+	        }
 
 	        try {
-		        $imageUrl = $this->getImageUrl($productData, 'product_page_image_medium');
+		        $imageUrl = $this->getImageUrl($imageProduct, 'product_page_image_medium');
 	        } catch (\Exception $e) {
-		        $imageUrl = $this->productImageHelper->create()->init($productData, 'product_thumbnail_image')
-		                                             ->setImageFile($productData->getThumbnail())->getUrl();
+		        $imageUrl = $this->productImageHelper->create()->init($imageProduct, 'product_thumbnail_image')
+		                                             ->setImageFile($imageProduct->getThumbnail())->getUrl();
 	        }
 
             $data[] = [
