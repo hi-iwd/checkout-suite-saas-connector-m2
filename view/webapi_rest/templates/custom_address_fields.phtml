@@ -29,8 +29,8 @@ $companyFieldVal = $block->getAddress()->getCompany();
     <span class="iwd-opc-field">
         <input type="text" class="iwd-opc-input optional"
                autocomplete="organization"
-               name="<?= $companyFieldName ?>"
-               value="<?= $companyFieldVal ?>">
+               name="<?= $block->escapeHtmlAttr($companyFieldName) ?>"
+               value="<?= $block->escapeHtmlAttr($companyFieldVal) ?>">
         <span class="label <?php if($companyFieldVal): ?>filled<?php endif; ?>">Company</span>
     </span>
 </p>

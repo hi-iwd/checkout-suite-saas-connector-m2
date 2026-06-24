@@ -4,5 +4,5 @@
 $viewModel = $block->getViewModel();
 ?>
 <?php if($viewModel->isPayPalEnabled()): ?>
-    <div data-mage-init='<?= $viewModel->getBtnConfiguration(); ?>' class="iwd-paypal-product-credit-ms"></div>
+    <div data-mage-init='<?= $block->escapeHtmlAttr($viewModel->getBtnConfiguration()) ?>' class="iwd-paypal-product-credit-ms"></div>
 <?php endif; ?>

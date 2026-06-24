@@ -9,18 +9,18 @@
             <?php if (empty($value)) continue; ?>
             <div>
                 <?php if (!empty($label)): ?>
-                    <span><b><?= $label ?>: </b></span>
+                    <span><b><?= $block->escapeHtml($label) ?>: </b></span>
                 <?php endif; ?>
 
                 <?php if (is_object($value)) {
 
                     foreach ($value as $optionLabel => $optionValue) {
                         ?>
-                        <p style="margin: 0"><b><?= $optionLabel ?>: </b><?= $block->parseOption($optionValue) ?></p>
+                        <p style="margin: 0"><b><?= $block->escapeHtml($optionLabel) ?>: </b><?= $block->escapeHtml($block->parseOption($optionValue)) ?></p>
                         <?php
                     }
                 } else {
-                    echo '<span>' . $value . '</span>';
+                    echo '<span>' . $block->escapeHtml($value) . '</span>';
                 } ?>
 
             </div>
@@ -31,17 +31,17 @@
             <?php if (empty($value)) continue; ?>
             <div>
                 <?php if (!empty($label)): ?>
-                    <span><b><?= $label ?>: </b></span>
+                    <span><b><?= $block->escapeHtml($label) ?>: </b></span>
                 <?php endif; ?>
 
                 <?php if (is_object($value)) {
                     foreach ($value as $optionLabel => $optionValue) {
                         ?>
-                        <p style="margin: 0"><b><?= $optionLabel ?>: </b><?= $block->parseOption($optionValue) ?></p>
+                        <p style="margin: 0"><b><?= $block->escapeHtml($optionLabel) ?>: </b><?= $block->escapeHtml($block->parseOption($optionValue)) ?></p>
                         <?php
                     }
                 } else {
-                    echo '<span>' . $value . '</span>';
+                    echo '<span>' . $block->escapeHtml($value) . '</span>';
                 } ?>
 
             </div>

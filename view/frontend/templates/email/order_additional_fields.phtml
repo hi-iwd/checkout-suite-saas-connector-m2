@@ -8,7 +8,7 @@
         <thead>
         <tr>
             <th class="item-info" colspan="2">
-                <?= __('Additional Fields Information:') ?>
+                <?= $block->escapeHtml(__('Additional Fields Information:')) ?>
             </th>
         </tr>
         </thead>
@@ -24,12 +24,12 @@
                     <?php if (is_object($fieldValue)): ?>
                         <?php foreach ($fieldValue as $optionLabel => $optionValue): ?>
                         <div>
-                            <div style="display: inline-block;max-width: 76%; vertical-align: top;"><?=$optionLabel?></div>
-                            <div style="display: inline-block;max-width: 23%; vertical-align: top;" >: <b><?= $block->parseOption($optionValue) ?></b></div>
+                            <div style="display: inline-block;max-width: 76%; vertical-align: top;"><?= $block->escapeHtml($optionLabel) ?></div>
+                            <div style="display: inline-block;max-width: 23%; vertical-align: top;" >: <b><?= $block->escapeHtml($block->parseOption($optionValue)) ?></b></div>
                         </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <?= $fieldValue; ?>
+                        <?= $block->escapeHtml($fieldValue); ?>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -41,4 +41,3 @@
         </tbody>
     </table>
 <?php endif; ?>
-

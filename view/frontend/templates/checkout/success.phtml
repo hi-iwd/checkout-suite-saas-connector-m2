@@ -15,8 +15,8 @@
     <div class="dominate-payment-details-wrapper">
         <?php foreach ($this->getPaymentMethodDetails() as $title => $content):?>
             <p>
-                <strong><?php echo $title; ?>: </strong>
-                <span><?php echo $content; ?></span>
+                <strong><?= $block->escapeHtml($title) ?>: </strong>
+                <span><?= $block->escapeHtml($content) ?></span>
             </p>
         <?php endforeach;?>
     </div>

@@ -83,10 +83,10 @@ class IWDCheckoutPay extends Adapter
         $formBlockType,
         $infoBlockType,
         PaymentMethod $paymentHelper,
-        CommandPoolInterface $commandPool = null,
-        ValidatorPoolInterface $validatorPool = null,
-        CommandManagerInterface $commandExecutor = null,
-        LoggerInterface $logger = null
+        ?CommandPoolInterface $commandPool = null,
+        ?ValidatorPoolInterface $validatorPool = null,
+        ?CommandManagerInterface $commandExecutor = null,
+        ?LoggerInterface $logger = null
     ) {
         parent::__construct(
             $eventManager,

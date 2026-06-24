@@ -6,9 +6,9 @@
 
 <div class="iwd-checkout-iframe-wrapper">
 
-    <iframe id="<?= $block->getCheckoutIframeId() ?>"
-            src="<?= $block->getFrameUrl() ?>"
-            data-mage-init='<?= $block->getJsonConfig() ?>'
+    <iframe id="<?= $block->escapeHtmlAttr($block->getCheckoutIframeId()) ?>"
+            src="<?= $block->escapeUrl($block->getFrameUrl()) ?>"
+            data-mage-init='<?= $block->escapeHtmlAttr($block->getJsonConfig()) ?>'
             frameborder="0"
             scrolling="no"
             allow="payment"
@@ -25,18 +25,18 @@
         ],
         function ($, iframeResizer) {
             // Resize Iframe
-            iframeResizer({log: false, checkOrigin: false}, '#<?= $block->getCheckoutIframeId() ?>');
+            iframeResizer({log: false, checkOrigin: false}, '#<?= $block->escapeJs($block->getCheckoutIframeId()) ?>');
 
             let changeUrlAction = function (event) {
                 if (event.data.changeUrlAction === 'edit_cart') {
-                    window.location.href = '<?= $block->getEditCartUrl() ?>';
+                    window.location.href = '<?= $block->escapeJs($block->getEditCartUrl()) ?>';
                 } else if (event.data.changeUrlAction === 'authenticate') {
                     let data = {username: event.data.login, password: event.data.password};
 
                     $.ajax({
                         dataType: "json",
                         method: "POST",
-                        url: '<?= $block->getLoginUrl() ?>',
+                        url: '<?= $block->escapeJs($block->getLoginUrl()) ?>',
                         data: JSON.stringify(data)
                     }).done(function (response) {
                         if (response.errors) {
@@ -45,16 +45,16 @@
                             location.reload(true);
                         }
                     }).fail(function () {
-                        let msg = "<?= __('Could not authenticate. Please try again later') ?>";
+                        let msg = "<?= $block->escapeJs(__('Could not authenticate. Please try again later')) ?>";
                         sendMessage(msg);
                     });
                 } else if (event.data.changeUrlAction === 'reset_pass') {
-                    window.location.href = '<?= $block->getResetPasswordUrl() ?>';
+                    window.location.href = '<?= $block->escapeJs($block->getResetPasswordUrl()) ?>';
                 }
             };
 
             let sendMessage = function (msg) {
-                document.getElementById('<?= $block->getCheckoutIframeId() ?>').contentWindow.postMessage({
+                document.getElementById('<?= $block->escapeJs($block->getCheckoutIframeId()) ?>').contentWindow.postMessage({
                     'action': 'sendMassage',
                     'message': msg
                 }, '*');
@@ -62,7 +62,7 @@
 
             let actionSuccess = function (event) {
                 if (event.data.actionSuccess) {
-                    let successUrl = '<?= $block->getSuccessActionUrl() ?>',
+                    let successUrl = '<?= $block->escapeJs($block->getSuccessActionUrl()) ?>',
                         successParams = event.data.actionSuccess;
 
                     window.location.href = successUrl + '?' + successParams;

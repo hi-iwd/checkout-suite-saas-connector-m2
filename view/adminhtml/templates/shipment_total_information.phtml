@@ -9,7 +9,7 @@ if (!isset($data['order_summary'])) return;
 ?>
 <div class="additional_total_section" style="margin-top: 20px;margin-bottom: 20px;">
     <div class="admin__page-section-item-title">
-        <span class="title"><?= __('Additional Total Information') ?></span>
+        <span class="title"><?= $block->escapeHtml(__('Additional Total Information')) ?></span>
     </div>
     <div class="admin__page-section-item ">
         <?php foreach ((array)$data['order_summary'] as $label => $value) : ?>
@@ -17,17 +17,17 @@ if (!isset($data['order_summary'])) return;
 
             <div>
                 <?php if(!empty($label)): ?>
-                    <span><b><?= $label ?? '' ?>: </b></span>
+                    <span><b><?= $block->escapeHtml($label ?? '') ?>: </b></span>
                 <?php endif; ?>
                 <span>
                     <?php if (is_array($value)) {
                         foreach ($value as $optionLabel => $optionValue) {
                             ?>
-                            <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                            <span><?= $block->escapeHtml($optionLabel) ?>: </span><span><?= $block->escapeHtml($block->parseOption($optionValue)) ?></span>
                             <?php
                         }
                     } else {
-                        echo '<span>' . $value . '</span>';
+                        echo '<span>' . $block->escapeHtml($value) . '</span>';
                     } ?>
                 </span>
             </div>
@@ -44,4 +44,3 @@ if (!isset($data['order_summary'])) return;
         });
     });
 </script>
-

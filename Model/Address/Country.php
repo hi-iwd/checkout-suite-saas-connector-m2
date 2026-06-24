@@ -30,7 +30,7 @@ class Country
      */
     public function __construct(
         CollectionFactory $countryCollection,
-        TopDestinationCountries $topDestinationCountries = null
+        ?TopDestinationCountries $topDestinationCountries = null
     ) {
         $this->countryCollection = $countryCollection;
         $this->topDestinationCountries = $topDestinationCountries ?:

@@ -9,16 +9,16 @@ if (!isset($data['order_summary'])) return;
 foreach ((array)$data['order_summary'] as $label => $value) :?>
     <?php if (empty($value)) continue; ?>
     <tr>
-        <td class="label"><?= $label ?? '' ?> </td>
+        <td class="label"><?= $block->escapeHtml($label ?? '') ?> </td>
         <td>
             <?php if (is_array($value)) {
                 foreach ($value as $optionLabel => $optionValue) {
                     ?>
-                     <span><?= $optionLabel ?>: </span><span><?= $optionValue == 'on' ? 'checked' : '' ?></span><br>
+                     <span><?= $block->escapeHtml($optionLabel) ?>: </span><span><?= $optionValue == 'on' ? 'checked' : '' ?></span><br>
                     <?php
                 }
             } else {
-                echo $value;
+                echo $block->escapeHtml($value);
             } ?>
         </td>
     </tr>

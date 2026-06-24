@@ -12,13 +12,13 @@ $shipping_price = $block->getShipping();
                 <thead>
                 <tr>
                     <th style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; text-align: left; vertical-align: bottom; padding: 10px">
-                        <?= __("Items") ?>
+                        <?= $block->escapeHtml(__("Items")) ?>
                     </th>
                     <th style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: bottom; padding: 10px; text-align: center">
-                        <?= __("Qty") ?>
+                        <?= $block->escapeHtml(__("Qty")) ?>
                     </th>
                     <th style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: bottom; padding: 10px; text-align: right">
-                        <?= __("Price") ?>
+                        <?= $block->escapeHtml(__("Price")) ?>
                     </th>
                 </tr>
                 </thead>
@@ -29,26 +29,26 @@ $shipping_price = $block->getShipping();
                         ?>
                         <tr>
                             <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; padding: 10px; border-top: 1px solid rgba(204, 204, 204, 1)">
-                                <p style="margin-top: 0; font-weight: 700; margin-bottom: 5px"><?= $item['name'] ?></p>
-                                <p style="margin-top: 0; margin-bottom: 10px"><?= __("SKU:") ?> <?= $item['sku'] ?></p>
+                                <p style="margin-top: 0; font-weight: 700; margin-bottom: 5px"><?= $block->escapeHtml($item['name']) ?></p>
+                                <p style="margin-top: 0; margin-bottom: 10px"><?= $block->escapeHtml(__("SKU:")) ?> <?= $block->escapeHtml($item['sku']) ?></p>
                                 <dl style="margin-top: 0; margin-bottom: 0; padding-left: 20px">
                                     <?php foreach ($item['options'] as $option) { ?>
                                         <dt style="font-weight: 700; margin-top: 0; margin-bottom: 0; padding-bottom: 0">
                                             <strong
                                                     style="font-weight: 700"><em
-                                                        style="font-style: italic"><?= $option['label'] ?></em></strong>
+                                                        style="font-style: italic"><?= $block->escapeHtml($option['label']) ?></em></strong>
                                         </dt>
                                         <dd style="margin-top: 0; margin-left: 0; margin-bottom: 0; padding-bottom: 0; padding-left: 10px">
-                                            <?= $option['value'] ?>
+                                            <?= $block->escapeHtml($option['value']) ?>
                                         </dd>
                                     <?php } ?>
                                 </dl>
                             </td>
                             <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; padding: 10px; border-top: 1px solid rgba(204, 204, 204, 1); text-align: center">
-                                <?= $item['qty'] ?>
+                                <?= $block->escapeHtml($item['qty']) ?>
                             </td>
                             <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; padding: 10px; border-top: 1px solid rgba(204, 204, 204, 1); text-align: right">
-                                <span> <?= $item['price'] ?></span>
+                                <span> <?= $block->escapeHtml($item['price']) ?></span>
                             </td>
                         </tr>
                         <?php
@@ -60,18 +60,18 @@ $shipping_price = $block->getShipping();
                 <tr style="padding: 10px">
                     <th colspan="2" scope="row"
                         style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); font-weight: 400; padding: 10px 10px 10px; text-align: right">
-                        <?= __("Shipping") ?>
+                        <?= $block->escapeHtml(__("Shipping")) ?>
                     </th>
                     <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); padding: 10px 10px 10px; text-align: right">
-                        <span style="white-space: nowrap"><?= $shipping_price ?></span></td>
+                        <span style="white-space: nowrap"><?= $block->escapeHtml($shipping_price) ?></span></td>
                 </tr>
                 <tr>
                     <th colspan="2" scope="row"
                         style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); font-weight: 400; padding: 10px 10px 10px; text-align: right">
-                        <strong style="font-weight: 700"><?= __("Grand Total") ?></strong>
+                        <strong style="font-weight: 700"><?= $block->escapeHtml(__("Grand Total")) ?></strong>
                     </th>
                     <td style="font-family:Open Sans,Helvetica Neue, Helvetica, Arial, sans-serif; vertical-align: top; background-color: rgba(245, 245, 245, 1); padding: 10px 10px 10px; text-align: right">
-                        <strong style="font-weight: 700"><span style="white-space: nowrap"><?= $total ?></span></strong>
+                        <strong style="font-weight: 700"><span style="white-space: nowrap"><?= $block->escapeHtml($total) ?></span></strong>
                     </td>
                 </tr>
                 </tfoot>

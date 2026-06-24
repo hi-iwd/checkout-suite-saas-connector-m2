@@ -9,17 +9,17 @@
             <?php if(empty($value)) continue; ?>
             <div>
                 <?php if(!empty($label)): ?>
-                     <span><b><?= $label ?? '' ?>: </b></span>
+                     <span><b><?= $block->escapeHtml($label ?? '') ?>: </b></span>
                 <?php endif; ?>
                 <span>
                     <?php if (is_object($value)) {
                         foreach ($value as $optionLabel => $optionValue) {
                             ?>
-                            <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                            <span><?= $block->escapeHtml($optionLabel) ?>: </span><span><?= $block->escapeHtml($block->parseOption($optionValue)) ?></span>
                             <?php
                         }
                     } else {
-                        echo '<span>' . $value . '</span>';
+                        echo '<span>' . $block->escapeHtml($value) . '</span>';
                     } ?>
                 </span>
             </div>
@@ -30,16 +30,16 @@
             <?php if(empty($value)) continue; ?>
             <div>
                 <?php if(!empty($label)) ?>
-                    <span><b><?= $label ?? '' ?>: </b></span>
+                    <span><b><?= $block->escapeHtml($label ?? '') ?>: </b></span>
                 <span>
                     <?php if (is_object($value)) {
                         foreach ($value as $optionLabel => $optionValue) {
                             ?>
-                            <br> <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                            <br> <span><?= $block->escapeHtml($optionLabel) ?>: </span><span><?= $block->escapeHtml($block->parseOption($optionValue)) ?></span>
                             <?php
                         }
                     } else {
-                        echo '<span>' . $value . '</span>';
+                        echo '<span>' . $block->escapeHtml($value) . '</span>';
                     } ?>
                 </span>
             </div>

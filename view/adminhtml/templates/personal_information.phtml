@@ -6,16 +6,16 @@
 <?php foreach ((array)$block->getPersonalDetails() as $label => $value) : ?>
     <?php if (empty($value)) continue; ?>
     <tr>
-        <th class="label"><?= $label ?? '' ?> </th>
+        <th class="label"><?= $block->escapeHtml($label ?? '') ?> </th>
         <td>
             <?php if (is_object($value)) {
                 foreach ($value as $optionLabel => $optionValue) {
                     ?>
-                    <br> <span><?= $optionLabel ?>: </span><span><?= $block->parseOption($optionValue) ?></span>
+                    <br> <span><?= $block->escapeHtml($optionLabel) ?>: </span><span><?= $block->escapeHtml($block->parseOption($optionValue)) ?></span>
                     <?php
                 }
             } else {
-                echo $value;
+                echo $block->escapeHtml($value);
             } ?>
         </td>
     </tr>

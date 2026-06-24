@@ -14,17 +14,17 @@ $merchantId = $block->getMerchantId() ? $block->getMerchantId() : ''
         ], function ($) {
             if (typeof window.paypal === 'undefined') {
                 let scriptParams = {
-                    "client-id": "<?= $block->getClientId() ?>",
+                    "client-id": "<?= $block->escapeJs($block->getClientId()) ?>",
                     "commit": "false",
                     "intent": "authorize",
                     "components": "buttons,messages,applepay,googlepay",
                     "vault": "false",
-                    "merchant-id": "<?= $merchantId ?>",
-                    "currency": "<?= $block->getCurrencyCode() ?>",
-                    "data-partner-attribution-id": "<?= $block->getPayPalBnCode() ?>"
+                    "merchant-id": "<?= $block->escapeJs($merchantId) ?>",
+                    "currency": "<?= $block->escapeJs($block->getCurrencyCode()) ?>",
+                    "data-partner-attribution-id": "<?= $block->escapeJs($block->getPayPalBnCode()) ?>"
                 };
 
-                const enableFunding = "<?= $block->getEnableFundingParam() ?>";
+                const enableFunding = "<?= $block->escapeJs($block->getEnableFundingParam()) ?>";
 
                 if(enableFunding !== "") {
                     scriptParams['enable-funding'] = enableFunding;
@@ -40,15 +40,15 @@ $merchantId = $block->getMerchantId() ? $block->getMerchantId() : ''
             }
 
             function renderPayPalSmartButtons() {
-                const container = $('#<?= $containerId ?>-wrapper'),
+                const container = $('#<?= $block->escapeJs($containerId) ?>-wrapper'),
                       element   = $('<div>').attr({
-                          'id': '<?= $containerId ?>',
-                          'data-mage-init': '<?= $block->getJsonConfig($containerId) ?>'
+                          'id': '<?= $block->escapeJs($containerId) ?>',
+                          'data-mage-init': '<?= $block->escapeJs($block->getJsonConfig($containerId)) ?>'
                       });
 
                 container.html(element).trigger('contentUpdated');
             }
         });
     </script>
-    <div id='<?= $containerId ?>-wrapper' class="iwd-paypal-wrapper"></div>
+    <div id='<?= $block->escapeHtmlAttr($containerId) ?>-wrapper' class="iwd-paypal-wrapper"></div>
 <?php endif; ?>

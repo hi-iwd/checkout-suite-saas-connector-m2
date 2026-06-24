@@ -3,4 +3,4 @@
  * @var $block IWD\CheckoutConnector\Block\PayPal\Banner
  */
 ?>
-<div data-mage-init='<?= $block->getJsonConfig(); ?>' class="iwd-paypal-banner"></div>
+<div data-mage-init='<?= $block->escapeHtmlAttr($block->getJsonConfig()) ?>' class="iwd-paypal-banner"></div>

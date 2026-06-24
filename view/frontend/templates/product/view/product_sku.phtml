@@ -3,8 +3,8 @@ $viewModel = $block->getData('view_model');
 if ($viewModel->isEnable()):
     ?>
     <script>
-        window.currentProductSku = <?=json_encode($viewModel->getProductData())?>;
-        window.subscription_btn = <?=json_encode($viewModel->getBtnConfiguration())?>
+        window.currentProductSku = <?= /* @noEscape */ json_encode($viewModel->getProductData()) ?>;
+        window.subscription_btn = <?= /* @noEscape */ json_encode($viewModel->getBtnConfiguration()) ?>
     </script>
 <?php
 endif;

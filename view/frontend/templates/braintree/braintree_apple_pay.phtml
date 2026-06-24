@@ -4,4 +4,4 @@
 $viewModel = $block->getViewModel();
 ?>
 
-<div data-mage-init='<?= $viewModel->getBtnConfiguration(); ?>' class="iwd-braintree-apple-pay"></div>
+<div data-mage-init='<?= $block->escapeHtmlAttr($viewModel->getBtnConfiguration()) ?>' class="iwd-braintree-apple-pay"></div>
